@@ -14,10 +14,10 @@
 
 package org.ml4j.autograd.node;
 
-import org.ml4j.autograd.BackwardConfig;
-
 import java.util.List;
 import java.util.function.Supplier;
+import org.ml4j.autograd.BackwardConfig;
+
 
 /**
  * Represents a node in a compulation graph for an AutogradValue of type V.
