@@ -16,6 +16,8 @@ package org.ml4j.autograd;
 
 /**
  * A dummy placeholder for a demo context attribute, such as size.
+ * 
+ * @author Michael Lavelle
  */
 public interface DemoSize {
 }

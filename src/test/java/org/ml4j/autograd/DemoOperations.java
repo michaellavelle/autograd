@@ -14,32 +14,16 @@
 
 package org.ml4j.autograd;
 
+import org.ml4j.autograd.arithmetic.operations.ArithmeticOperations;
+
 /**
  * Operations required to be supported by an AutogradValue tested by DemoAutogradValueTest.
+ * 
+ * @author Michael Lavelle
  */
-public interface DemoOperations<V> {
-
-    float[] getDataAsFloatArray();
+public interface DemoOperations<V> extends ArithmeticOperations<V> {
 
     DemoSize size();
-
-    V add(V other);
-
-    V mul(V other);
-
-    V sub(V other);
-
-    V div(V other);
-
-    V add(float other);
-
-    V mul(float other);
-
-    V sub(float other);
-
-    V div(float other);
-
-    V neg();
 
     V relu();
 

@@ -22,6 +22,7 @@ import java.util.function.Supplier;
  * @param <V> The concrete type of the Values created by this factory..
  * @param <D> The type of data wrapped by the Values, eg. Float, Matrix, Tensor
  * @param <C> The type of context required for these Value, eg. Size,
+ * 
  * @author Michael Lavelle
  */
 public interface AutogradValueFactory<V, D, C> {

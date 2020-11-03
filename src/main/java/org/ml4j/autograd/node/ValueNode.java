@@ -20,6 +20,8 @@ import org.ml4j.autograd.BackwardConfig;
 /**
  * Represents a Node wrapping a (non-accumulating) AutogradValue.
  *
+ * @author Michael Lavelle
+ *
  * @param <V> The concret type of the AutogradValue referenced by this Node.
  */
 public interface ValueNode<V> extends Node<V> {

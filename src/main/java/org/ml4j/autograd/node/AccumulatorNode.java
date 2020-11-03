@@ -20,6 +20,8 @@ import java.util.function.Supplier;
 /**
  * Represents a Node that is used for accumulating deltas added to an AutogradValue.
  *
+ * @author Michael Lavelle
+ *
  * @param <V> The concrete type of the AutogradValue being accumulated.
  * @param <A> The concrete type of this AccumulatorNode.
  */

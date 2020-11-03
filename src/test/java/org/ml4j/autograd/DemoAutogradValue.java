@@ -16,7 +16,9 @@ package org.ml4j.autograd;
 
 /**
  * Interface of our DemoAutogradValue - extending from both AutogradValue and DemoOperations.
- */
+ * 
+ * @author Michael Lavelle
+*/
 public interface DemoAutogradValue extends AutogradValue<DemoAutogradValue, Float, DemoSize>, DemoOperations<DemoAutogradValue> {
 
 }

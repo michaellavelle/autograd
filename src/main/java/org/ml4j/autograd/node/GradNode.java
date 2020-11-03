@@ -20,6 +20,8 @@ import java.util.Optional;
  * Represents the Node in the computation graph for the gradient of an AutogradValue.
  * Allows gradients to be accumulated.
  *
+ * @author Michael Lavelle
+ *
  * @param <V> The concrete of AutogradValue referenced by this Node.
  */
 public interface GradNode<V> extends AccumulatorNode<V, GradNode<V>> {

@@ -14,15 +14,36 @@
 
 package org.ml4j.autograd;
 
+import org.ml4j.autograd.node.GradNode;
+import org.ml4j.autograd.node.ValueNode;
+import org.ml4j.autograd.operators.DifferentiableBinaryOperator;
+import org.ml4j.autograd.operators.DifferentiableUnaryOperator;
+
 /**
  * Represents an AutogradValue of type V, with a Pytorch-like API.
  *
  * @param <V> The concrete type of this AutogradValue.
  * @param <D> The type of data wrapped by this AutogradValue, eg. Float, Matrix, Tensor
  * @param <C> The type of context required for this AutogradValue, eg. Size,
+ *
  * @author Michael Lavelle
  */
-public interface AutogradValue<V, D, C> extends Value<V, D, C> {
+public interface AutogradValue<V, D, C> extends Value<V, D, C>, Accumulatable<V> {
+
+
+    /**
+     * Obtain the ValueNode in the computation graph that references this AutogradValue.
+     *
+     * @return The ValueNode in the computation graph that references this AutogradValue.
+     */
+    ValueNode<V> getValueNode();
+
+    /**
+     * Obtain the GradNode in the computation graph that references the gradient AutogradValue of this AutogradValue.
+     *
+     * @return The GradNode in the computation graph that references the gradient AutogradValue of this AutogradValue.
+     */
+    GradNode<V> getGradNode();
 
     /**
      * Sets whether this AutogradValue requires a gradient to be calculated.
@@ -31,6 +52,13 @@ public interface AutogradValue<V, D, C> extends Value<V, D, C> {
      * @return This AutogradValue.
      */
     V requires_grad_(boolean requires_grad);
+
+    /**
+     * Determines whether this AutogradValue requires a gradient to be calculated.
+     *
+     * @return Whether this AutogradValue requires a gradient to be calculated.
+     */
+    boolean requires_grad();
 
     /**
      * Obtains the gradient of this AutogradValue (after backpropagation has been performed), or null otherwise.
@@ -50,4 +78,29 @@ public interface AutogradValue<V, D, C> extends Value<V, D, C> {
      * using the specified BackwardConfig.
      */
     void backward(BackwardConfig config);
+
+    /**
+     * Applies the operator to this AutogradValue.
+     *
+     * @param op The operator to apply.
+     * @return A new AutogradValue containing the result of the operation.
+     */
+    V apply(DifferentiableUnaryOperator<V, D, C> op);
+
+    /**
+     * Applies the operator to this AutogradValue, and the specified other AutogradValue.
+     *
+     * @param op The operator to apply.
+     * @return A new AutogradValue containing the result of the operation.
+     */
+    V apply(DifferentiableBinaryOperator<V, D, C> op, V other);
+
+    /**
+     * Swaps this AutogradValue with the other AutogradValue in such a way that
+     * all the attributes of the values are swapped.
+     *
+     * @param other The other AutogradValue.
+     */
+    void swapWith(V other);
+
 }

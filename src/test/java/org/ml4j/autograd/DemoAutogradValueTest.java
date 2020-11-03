@@ -23,6 +23,9 @@ import org.mockito.MockitoAnnotations;
 
 /**
  * A test for our DemoAutogradValue.
+ * 
+ * @author Michael Lavelle
+ *
  */
 public class DemoAutogradValueTest {
 

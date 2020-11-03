@@ -12,7 +12,7 @@
  * the License.
  */
 
-package org.ml4j.autograd.op;
+package org.ml4j.autograd.operators;
 
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
@@ -20,6 +20,8 @@ import java.util.function.UnaryOperator;
 /**
  * Represents a differentiable unary operator for an AutogradValue,
  * and the logic required for both the forward and backward passes.
+ *
+ * @author Michael Lavelle
  *
  * @param <V> The concrete type of AutogradValue to which this operator applies.
  * @param <D> The type of data wrapped by the AutogradValue, and to which we apply the forward propagation.

@@ -14,21 +14,14 @@
 
 package org.ml4j.autograd;
 
-import java.util.function.Supplier;
-
 /**
- * Specifies the signature of the data-accessor method for a Value.
+ * Represents an Accumulatable entity.
  * 
  * @author Michael Lavelle
  *
- * @param <D> The type of data being wrapped by this data supplier.
+ * @param <V> The concrete type of Accumulatable entity. 
  */
-public interface DataSupplier<D> {
+public interface Accumulatable<V> {
 
-    /**
-     * Returns a supplier of data, allowing for lazy, or cached data retrieval.
-     *
-     * @return A supplier of data.
-     */
-    Supplier<D> data();
+    V add(V other);
 }

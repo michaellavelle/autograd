@@ -16,6 +16,8 @@ package org.ml4j.autograd;
 
 /**
  * An AutogradValueFactory implementation for DemoAutogradValues.
+ * 
+ * @author Michael Lavelle
  */
 public interface DemoAutogradValueFactory extends AutogradValueFactory<DemoAutogradValue, Float, DemoSize> {
 

@@ -17,6 +17,9 @@ package org.ml4j.autograd;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+/**
+ * @author Michael Lavelle
+ */
 public class BackwardConfigTest {
 
     @Test

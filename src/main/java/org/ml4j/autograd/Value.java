@@ -22,6 +22,7 @@ import java.util.function.Supplier;
  * @param <V> The concrete type of this Value.
  * @param <D> The type of data wrapped by this Value, eg. Float, Matrix, Tensor
  * @param <C> The type of context required for this Value, eg. Size,
+ *
  * @author Michael Lavelle
  */
 public interface Value<V, D, C> extends DataSupplier<D> {
@@ -30,6 +31,14 @@ public interface Value<V, D, C> extends DataSupplier<D> {
      * A supplier of data.
      */
     Supplier<D> data();
+
+    /**
+     * Sets the supplier of data on this Value.
+     *
+     * @param data The supplier of data.
+     * @return This Value.
+     */
+    V data_(Supplier<D> data);
 
     /**
      * Returns the name of this Value, or null if no name defined.

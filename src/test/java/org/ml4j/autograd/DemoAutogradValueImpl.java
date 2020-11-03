@@ -18,6 +18,8 @@ import org.ml4j.autograd.impl.AutogradValueImpl;
 
 /**
  * An AutogradValue implementation that supports the operations defined bt DemoOperations.
+ * 
+ * @author Michael Lavelle
  */
 public class DemoAutogradValueImpl extends AutogradValueImpl<DemoAutogradValue, Float, DemoSize> implements AutogradValue<DemoAutogradValue, Float, DemoSize>, DemoOperations<DemoAutogradValue>, DemoAutogradValue {
 
@@ -85,4 +87,24 @@ public class DemoAutogradValueImpl extends AutogradValueImpl<DemoAutogradValue, 
     public DemoAutogradValue self() {
         return this;
     }
+
+	@Override
+	public DemoAutogradValue add_(DemoAutogradValue other) {
+        return applyInlineBinaryOperator(other, (f, s) -> f + s, "add");
+	}
+
+	@Override
+	public DemoAutogradValue sub_(DemoAutogradValue other) {
+        return applyInlineBinaryOperator(other, (f, s) -> f + s, "sub");
+	}
+
+	@Override
+	public DemoAutogradValue gt(float value) {
+        return applyUnaryOperator(f -> f > value ? 1f : 0f, (g, v) -> g.mul(v.gt(value)), "gt", s -> s);
+	}
+
+	@Override
+	public DemoAutogradValue gte(float value) {
+        return applyUnaryOperator(f -> f >= value ? 1f : 0f, (g, v) -> g.mul(v.gte(value)), "gt", s -> s);
+	}
 }

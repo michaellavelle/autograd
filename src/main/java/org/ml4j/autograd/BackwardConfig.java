@@ -16,6 +16,8 @@ package org.ml4j.autograd;
 
 /**
  * Encapsulates the configuration parameters we use to control the behaviour of a backward pass.
+ *
+ * @author Michael Lavelle
  */
 public class BackwardConfig {
 

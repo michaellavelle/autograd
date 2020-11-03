@@ -22,6 +22,8 @@ import org.ml4j.autograd.BackwardConfig;
 /**
  * Represents a node in a compulation graph for an AutogradValue of type V.
  *
+ * @author Michael Lavelle
+ *
  * @param <V> The concrete type of the AutogradValue that is referenced by this Node.
  */
 public interface Node<V> {
