@@ -12,19 +12,12 @@
  * the License.
  */
 
-package org.ml4j.autograd;
-
-import org.ml4j.autograd.arithmetic.operations.ArithmeticOperations;
+package org.ml4j.autograd.demo;
 
 /**
- * Operations required to be supported by an AutogradValue tested by DemoAutogradValueTest.
+ * A dummy placeholder for a demo context attribute, such as size.
  * 
  * @author Michael Lavelle
  */
-public interface DemoOperations<V> extends ArithmeticOperations<V> {
-
-    DemoSize size();
-
-    V relu();
-
+public interface DemoSize {
 }

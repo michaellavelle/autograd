@@ -12,11 +12,12 @@
  * the License.
  */
 
-package org.ml4j.autograd;
+package org.ml4j.autograd.demo;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.ml4j.autograd.BackwardConfig;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -27,16 +28,16 @@ import org.mockito.MockitoAnnotations;
  * @author Michael Lavelle
  *
  */
-public class DemoAutogradValueTest {
+public abstract class DemoAutogradValueTestBase<D> {
 
     @Mock
-    private DemoAutogradValueFactory gradValueFactory;
+	protected DemoAutogradValueFactory<D> gradValueFactory;
 
     @Mock
-    private DemoAutogradValue mockGradValue;
+    protected DemoAutogradValue<D> mockGradValue;
 
     @Mock
-    private DemoSize size;
+    protected DemoSize size;
 
     @BeforeEach
     public void setUp() {
@@ -61,10 +62,14 @@ public class DemoAutogradValueTest {
         Mockito.when(mockGradValue.getDataAsFloatArray()).thenReturn(new float[]{1f});
     }
 
-    protected DemoAutogradValue createGradValue(float value, boolean requires_grad) {
-        return gradValueFactory.create(() -> value, size).requires_grad_(requires_grad);
-    }
+    protected abstract DemoAutogradValue<D> createGradValue(float value, boolean requires_grad);
+   
+    protected abstract DemoAutogradValue<D> createGradValue(D value, boolean requires_grad);
 
+    
+    protected abstract D createData(float value);
+
+    
     @Test
     public void test_example() {
 
@@ -92,20 +97,26 @@ public class DemoAutogradValueTest {
 
         g = g.add(ten().div(f));
 
-        Mockito.when(mockGradValue.data()).thenReturn(() -> 24.70f);
+        Mockito.when(mockGradValue.data()).thenReturn(() -> createData(24.70f));
 
-        Assertions.assertEquals(24.70f, g.data().get(), 0.01);
+        assertEquals(createData(24.70f), g.data().get());
 
         g.backward();
 
-        Mockito.when(mockGradValue.data()).thenReturn(() -> 138.83f);
+        Mockito.when(mockGradValue.data()).thenReturn(() ->createData(138.83f));
 
-        Assertions.assertEquals(138.83f, a.grad().data().get(), 0.01);
+        assertEquals(createData(138.83f), a.grad().data().get());
 
-        Mockito.when(mockGradValue.data()).thenReturn(() -> 645.58f);
+        Mockito.when(mockGradValue.data()).thenReturn(() -> createData(645.58f));
 
-        Assertions.assertEquals(645.58f, b.grad().data().get(), 0.01);
+        assertEquals(createData(645.58f), b.grad().data().get());
     }
+    
+    protected abstract void assertEquals(D value1, D value2);
+    
+    protected abstract D add(D value1, D value2);
+    protected abstract D mul(D value1, float value2);
+
 
     @Test
     public void test_hessian_vector() {
@@ -123,16 +134,16 @@ public class DemoAutogradValueTest {
         var xGradAfterFirstBackward = x.grad();
         var yGradAfterFirstBackward = y.grad();
 
-        Mockito.when(mockGradValue.data()).thenReturn(() -> 1.6f);
+        Mockito.when(mockGradValue.data()).thenReturn(() -> createData(1.6f));
 
-        Assertions.assertEquals(1.6f, xGradAfterFirstBackward.data().get(), 0.01);
+        assertEquals(createData(1.6f), xGradAfterFirstBackward.data().get());
 
-        Mockito.when(mockGradValue.data()).thenReturn(() -> 1.7f);
+        Mockito.when(mockGradValue.data()).thenReturn(() -> createData(1.7f));
 
-        Assertions.assertEquals(1.7f, yGradAfterFirstBackward.data().get(), 0.01);
+        assertEquals(createData(1.7f), yGradAfterFirstBackward.data().get());
 
-        var x_grad = createGradValue(x.data().get() * 2f + y.data().get(), false);
-        var y_grad = createGradValue(x.data().get() + y.data().get() * 2f, false);
+        var x_grad = createGradValue(add(mul(x.data().get(),2f),y.data().get()), false);
+        var y_grad = createGradValue(add(x.data().get(), mul(y.data().get(),2f)), false);
 
         var grad_sum = x.grad().mul(two).add(y.grad());
 
@@ -141,16 +152,16 @@ public class DemoAutogradValueTest {
         var xGradAfterSecondBackward = x.grad();
         var yGradAfterSecondBackward = y.grad();
 
-        Mockito.when(mockGradValue.data()).thenReturn(() -> 6.6f);
+        Mockito.when(mockGradValue.data()).thenReturn(() -> createData(6.6f));
 
         Assertions.assertSame(xGradAfterFirstBackward, xGradAfterSecondBackward);
-        Assertions.assertEquals(6.6, xGradAfterSecondBackward.data().get(), 0.001f);
+        assertEquals(createData(6.6f), xGradAfterSecondBackward.data().get());
 
         Assertions.assertSame(yGradAfterFirstBackward, yGradAfterSecondBackward);
 
-        Mockito.when(mockGradValue.data()).thenReturn(() -> 5.7f);
+        Mockito.when(mockGradValue.data()).thenReturn(() -> createData(5.7f));
 
-        Assertions.assertEquals(5.7, yGradAfterSecondBackward.data().get(), 0.001f);
+        assertEquals(createData(5.7f), yGradAfterSecondBackward.data().get());
 
         var x_hv = 5;
         var y_hv = 4;
@@ -159,11 +170,11 @@ public class DemoAutogradValueTest {
         Assertions.assertArrayEquals(y.grad().getDataAsFloatArray(), y_grad.add(createGradValue(y_hv, false)).getDataAsFloatArray(), 0.001f);
     }
 
-    private DemoAutogradValue one() {
+    private DemoAutogradValue<D> one() {
         return createGradValue(1, false);
     }
 
-    private DemoAutogradValue ten() {
+    private DemoAutogradValue<D> ten() {
         return createGradValue(10, false);
     }
 }

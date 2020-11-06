@@ -12,13 +12,16 @@
  * the License.
  */
 
-package org.ml4j.autograd;
+package org.ml4j.autograd.demo;
 
-/**
- * Interface of our DemoAutogradValue - extending from both AutogradValue and DemoOperations.
- * 
- * @author Michael Lavelle
-*/
-public interface DemoAutogradValue extends AutogradValue<DemoAutogradValue, Float, DemoSize>, DemoOperations<DemoAutogradValue> {
+import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.arithmetic.operations.DifferentiableWrappedArithmeticOperations;
+
+public interface DifferentiableWrappedDemoOperations<V extends DemoOperations<V>, D extends DemoOperations<D>, C> extends DifferentiableWrappedArithmeticOperations<V, D, C>, AutogradValue<V, D, C>, DemoOperations<V> {
+
+	@Override
+	default V relu() {
+        return applyUnaryOperator(D::relu, (g, v) -> g.mul(v.gt(0)), "gt", s -> s);
+	}
 
 }

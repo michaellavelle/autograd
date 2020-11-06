@@ -54,7 +54,7 @@ public abstract class AutogradValueImpl<V, D, C> implements AutogradValue<V, D, 
      *                      context for the resultant AutogradValue (eg. to specify a size transformation).
      * @return The resultant AutogradValue.
      */
-    protected V applyBinaryOperator(V other, BinaryOperator<D> forward, BiFunction<V, Pair<V, V>, V> backThis,
+	public V applyBinaryOperator(V other, BinaryOperator<D> forward, BiFunction<V, Pair<V, V>, V> backThis,
                                     BiFunction<V, Pair<V, V>, V> backOther, String op, BinaryOperator<C> contextMapper) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
@@ -68,7 +68,7 @@ public abstract class AutogradValueImpl<V, D, C> implements AutogradValue<V, D, 
      *
      * @return This AutogradValue.
      */
-    protected V applyInlineBinaryOperator(V other, BinaryOperator<D> forward, String op) {
+    public V applyInlineBinaryOperator(V other, BinaryOperator<D> forward, String op) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
@@ -84,7 +84,7 @@ public abstract class AutogradValueImpl<V, D, C> implements AutogradValue<V, D, 
      *                      context for the resultant AutogradValue (eg. to specify a size transformation).
      * @return The resultant AutogradValue.
      */
-    protected V applyUnaryOperator(UnaryOperator<D> forward, BiFunction<V, V, V> backThis, String op, UnaryOperator<C> contextMapper) {
+    public V applyUnaryOperator(UnaryOperator<D> forward, BiFunction<V, V, V> backThis, String op, UnaryOperator<C> contextMapper) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
     

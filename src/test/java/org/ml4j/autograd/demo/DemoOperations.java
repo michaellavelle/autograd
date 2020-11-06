@@ -12,13 +12,19 @@
  * the License.
  */
 
-package org.ml4j.autograd;
+package org.ml4j.autograd.demo;
+
+import org.ml4j.autograd.arithmetic.operations.ArithmeticOperations;
 
 /**
- * An AutogradValueFactory implementation for DemoAutogradValues.
+ * Operations required to be supported by an AutogradValue tested by DemoAutogradValueTest.
  * 
  * @author Michael Lavelle
  */
-public interface DemoAutogradValueFactory extends AutogradValueFactory<DemoAutogradValue, Float, DemoSize> {
+public interface DemoOperations<V> extends ArithmeticOperations<V> {
+
+    DemoSize size();
+
+    V relu();
 
 }

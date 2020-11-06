@@ -12,12 +12,16 @@
  * the License.
  */
 
-package org.ml4j.autograd;
+package org.ml4j.autograd.demo;
+
+import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.DataSupplier;
 
 /**
- * A dummy placeholder for a demo context attribute, such as size.
+ * Interface of our DemoAutogradValue - extending from both AutogradValue and DemoOperations.
  * 
  * @author Michael Lavelle
- */
-public interface DemoSize {
+*/
+public interface DemoAutogradValue<D> extends AutogradValue<DemoAutogradValue<D>, D, DemoSize>, DemoOperations<DemoAutogradValue<D>>, DataSupplier<D> {
+
 }

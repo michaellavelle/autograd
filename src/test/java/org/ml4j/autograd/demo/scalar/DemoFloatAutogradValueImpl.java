@@ -12,8 +12,12 @@
  * the License.
  */
 
-package org.ml4j.autograd;
+package org.ml4j.autograd.demo.scalar;
 
+import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.demo.DemoAutogradValue;
+import org.ml4j.autograd.demo.DemoOperations;
+import org.ml4j.autograd.demo.DemoSize;
 import org.ml4j.autograd.impl.AutogradValueImpl;
 
 /**
@@ -21,60 +25,61 @@ import org.ml4j.autograd.impl.AutogradValueImpl;
  * 
  * @author Michael Lavelle
  */
-public class DemoAutogradValueImpl extends AutogradValueImpl<DemoAutogradValue, Float, DemoSize> implements AutogradValue<DemoAutogradValue, Float, DemoSize>, DemoOperations<DemoAutogradValue>, DemoAutogradValue {
+public class DemoFloatAutogradValueImpl extends AutogradValueImpl<DemoAutogradValue<Float>, Float, DemoSize> implements AutogradValue<DemoAutogradValue<Float>, Float, DemoSize>, DemoOperations<DemoAutogradValue<Float>>, DemoAutogradValue<Float> {
 
+	
     @Override
     public float[] getDataAsFloatArray() {
         return new float[]{data().get()};
     }
 
     @Override
-    public DemoAutogradValue add(DemoAutogradValue other) {
+    public DemoAutogradValue<Float> add(DemoAutogradValue<Float> other) {
         return applyBinaryOperator(other, (f, s) -> f + s, (g, p) -> g, (g, p) -> g, "add", (f, s) -> f);
     }
 
     @Override
-    public DemoAutogradValue div(DemoAutogradValue other) {
+    public DemoAutogradValue<Float> div(DemoAutogradValue<Float> other) {
         return applyBinaryOperator(other, (f, s) -> f / s, (g, p) -> g.div(p.getRight()), (g, p) -> g.neg().mul(p.getLeft()).div(p.getRight().mul(p.getRight())), "div", (f, s) -> f);
     }
 
     @Override
-    public DemoAutogradValue mul(DemoAutogradValue other) {
+    public DemoAutogradValue<Float> mul(DemoAutogradValue<Float> other) {
         return applyBinaryOperator(other, (f, s) -> f * s, (g, p) -> g.mul(p.getRight()), (g, p) -> g.mul(p.getLeft()), "mul", (f, s) -> f);
     }
 
     @Override
-    public DemoAutogradValue add(float other) {
+    public DemoAutogradValue<Float> add(float other) {
         return applyUnaryOperator(f -> f + other, (g, v) -> g, "add", s -> s);
     }
 
     @Override
-    public DemoAutogradValue div(float other) {
+    public DemoAutogradValue<Float> div(float other) {
         return applyUnaryOperator(f -> f / other, (g, v) -> g.div(other), "div", s -> s);
     }
 
     @Override
-    public DemoAutogradValue mul(float other) {
+    public DemoAutogradValue<Float> mul(float other) {
         return applyUnaryOperator(f -> f * other, (g, v) -> g.mul(other), "mul", s -> s);
     }
 
     @Override
-    public DemoAutogradValue neg() {
+    public DemoAutogradValue<Float> neg() {
         return applyUnaryOperator(f -> -f, (g, v) -> g.neg(), "neg", s -> s);
     }
 
     @Override
-    public DemoAutogradValue sub(DemoAutogradValue other) {
+    public DemoAutogradValue<Float> sub(DemoAutogradValue<Float> other) {
         return applyBinaryOperator(other, (f, s) -> f - s, (g, p) -> g, (g, p) -> g.neg(), "sub", (f, s) -> f);
     }
 
     @Override
-    public DemoAutogradValue relu() {
-        return applyUnaryOperator(f -> f < 0 ? 0 : f, (g, v) -> v.data().get() < 0 ? g.mul(0) : g, "relu", s -> s);
+    public DemoAutogradValue<Float> relu() {
+        return applyUnaryOperator(f -> f < 0 ? 0 : f, (g, v) -> g.mul(v.gt(0)), "relu", s -> s);
     }
 
     @Override
-    public DemoAutogradValue sub(float other) {
+    public DemoAutogradValue<Float> sub(float other) {
         return applyUnaryOperator(f -> f - other, (g, v) -> g, "sub", s -> s);
     }
 
@@ -84,27 +89,27 @@ public class DemoAutogradValueImpl extends AutogradValueImpl<DemoAutogradValue, 
     }
 
     @Override
-    public DemoAutogradValue self() {
+    public DemoAutogradValue<Float> self() {
         return this;
     }
 
 	@Override
-	public DemoAutogradValue add_(DemoAutogradValue other) {
+	public DemoAutogradValue<Float> add_(DemoAutogradValue<Float> other) {
         return applyInlineBinaryOperator(other, (f, s) -> f + s, "add");
 	}
 
 	@Override
-	public DemoAutogradValue sub_(DemoAutogradValue other) {
+	public DemoAutogradValue<Float> sub_(DemoAutogradValue<Float> other) {
         return applyInlineBinaryOperator(other, (f, s) -> f + s, "sub");
 	}
 
 	@Override
-	public DemoAutogradValue gt(float value) {
+	public DemoAutogradValue<Float> gt(float value) {
         return applyUnaryOperator(f -> f > value ? 1f : 0f, (g, v) -> g.mul(v.gt(value)), "gt", s -> s);
 	}
 
 	@Override
-	public DemoAutogradValue gte(float value) {
+	public DemoAutogradValue<Float> gte(float value) {
         return applyUnaryOperator(f -> f >= value ? 1f : 0f, (g, v) -> g.mul(v.gte(value)), "gt", s -> s);
 	}
 }
