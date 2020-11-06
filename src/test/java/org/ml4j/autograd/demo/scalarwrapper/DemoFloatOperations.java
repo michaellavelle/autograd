@@ -12,7 +12,7 @@
  * the License.
  */
 
-package org.ml4j.autograd.demo.scalar;
+package org.ml4j.autograd.demo.scalarwrapper;
 
 import org.ml4j.autograd.demo.DemoOperations;
 import org.ml4j.autograd.demo.DemoSize;

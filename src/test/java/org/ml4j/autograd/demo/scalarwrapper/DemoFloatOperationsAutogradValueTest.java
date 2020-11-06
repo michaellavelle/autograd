@@ -17,7 +17,6 @@ package org.ml4j.autograd.demo.scalarwrapper;
 import org.junit.jupiter.api.Assertions;
 import org.ml4j.autograd.demo.DemoAutogradValue;
 import org.ml4j.autograd.demo.DemoAutogradValueTestBase;
-import org.ml4j.autograd.demo.scalar.DemoFloatOperations;
 
 public class DemoFloatOperationsAutogradValueTest extends DemoAutogradValueTestBase<DemoFloatOperations> {
 

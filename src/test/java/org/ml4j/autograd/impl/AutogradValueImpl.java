@@ -13,18 +13,23 @@
  */
 package org.ml4j.autograd.impl;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.node.GradNode;
+import org.ml4j.autograd.node.Node;
 import org.ml4j.autograd.node.ValueNode;
 import org.ml4j.autograd.operators.DifferentiableBinaryOperator;
 import org.ml4j.autograd.operators.DifferentiableUnaryOperator;
-import org.ml4j.autograd.AutogradValue;
 
 /**
  * Not yet implemented base class for AuotgradValues.
@@ -36,7 +41,24 @@ import org.ml4j.autograd.AutogradValue;
  * @param <C> The type of context required for this AutogradValue, eg. Size,
  * 
  */
-public abstract class AutogradValueImpl<V, D, C> implements AutogradValue<V, D, C> {
+public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> implements AutogradValue<V, D, C> {
+
+	private GradNode<V> gradNode;
+	private ValueNode<V> valueNode;
+	private C context;
+	private Supplier<D> data;
+	private boolean requires_grad;
+	private String name;
+	
+	protected AutogradValueImpl(Supplier<D> data, C context, List<Node<?>> children) {
+		this.data = data; 
+		this.context = context;
+		this.valueNode = new NodeImpl<>(() -> self(), children);
+		this.gradNode = new GradNodeImpl<V>(() -> null, () -> Optional.empty());
+		if (data == null) {
+			throw new IllegalArgumentException("Data supplier can not be null");
+		}
+	}
 
 	/**
      * Apply a binary operator to this AutogradValue.
@@ -56,8 +78,11 @@ public abstract class AutogradValueImpl<V, D, C> implements AutogradValue<V, D, 
      */
 	public V applyBinaryOperator(V other, BinaryOperator<D> forward, BiFunction<V, Pair<V, V>, V> backThis,
                                     BiFunction<V, Pair<V, V>, V> backOther, String op, BinaryOperator<C> contextMapper) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return createAutogradValue(() -> forward.apply(data().get(), other.data().get()), contextMapper.apply(context(), other.context()),
+        		Arrays.asList(getValueNode(), other.getValueNode()));
     }
+	
+	protected abstract V createAutogradValue(Supplier<D> data, C context, List<Node<?>> children);
     
     /**
      * Apply an inline binary operator to this AutogradValue.
@@ -85,7 +110,11 @@ public abstract class AutogradValueImpl<V, D, C> implements AutogradValue<V, D, 
      * @return The resultant AutogradValue.
      */
     public V applyUnaryOperator(UnaryOperator<D> forward, BiFunction<V, V, V> backThis, String op, UnaryOperator<C> contextMapper) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        V autogradValue = createAutogradValue(() -> forward.apply(data().get()), contextMapper.apply(context()), Arrays.asList(getValueNode()));
+    	BiConsumer<V, BackwardConfig> backwardFunction = null;
+		//throw new UnsupportedOperationException("Not yet implemented");
+        autogradValue.getValueNode().setBackwardFunction(backwardFunction);
+        return autogradValue;
     }
     
     /**
@@ -102,47 +131,52 @@ public abstract class AutogradValueImpl<V, D, C> implements AutogradValue<V, D, 
 
     @Override
     public Supplier<D> data() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return data;
     }
 
     @Override
     public V requires_grad_(boolean requires_grad) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    	this.requires_grad = requires_grad;
+    	return self();
     }
 
     @Override
     public V grad() {
-        throw new UnsupportedOperationException("Not yet implemented");
+    	return getGradNode().getValue().get();
     }
 
     @Override
     public void backward() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        backward(new BackwardConfig());
     }
 
     @Override
     public void backward(BackwardConfig config) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    	if (config == null) {
+    		throw new IllegalArgumentException("Config must not be null");
+    	}
+        // TODO
     }
 
     @Override
     public C context() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return context;
     }
 
     @Override
     public String name() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return name;
     }
 
     @Override
     public V name_(String name) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    	this.name = name;
+    	return self();
     }
     
     @Override
 	public boolean requires_grad() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return requires_grad;
 	}
     
 	@Override
@@ -152,7 +186,8 @@ public abstract class AutogradValueImpl<V, D, C> implements AutogradValue<V, D, 
 
 	@Override
 	public V data_(Supplier<D> data) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        this.data = data;
+        return self();
 	}
 
 	@Override
@@ -167,12 +202,12 @@ public abstract class AutogradValueImpl<V, D, C> implements AutogradValue<V, D, 
 	
 	@Override
 	public ValueNode<V> getValueNode() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return valueNode;
 	}
 
 	@Override
 	public GradNode<V> getGradNode() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return gradNode;
 	}
 
 	@Override

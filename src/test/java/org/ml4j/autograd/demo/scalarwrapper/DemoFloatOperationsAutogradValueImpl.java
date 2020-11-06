@@ -14,24 +14,36 @@
 
 package org.ml4j.autograd.demo.scalarwrapper;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.demo.DemoAutogradValue;
 import org.ml4j.autograd.demo.DemoSize;
 import org.ml4j.autograd.demo.DifferentiableWrappedDemoOperations;
-import org.ml4j.autograd.demo.scalar.DemoFloatOperations;
 import org.ml4j.autograd.impl.AutogradValueImpl;
+import org.ml4j.autograd.node.Node;
 
 /**
- * An AutogradValue implementation that supports the operations defined bt DemoOperations.
+ * An AutogradValue implementation that supports the operations defined by DemoOperations, 
+ * and that takes advantage of the fact that the wrapped data also implements DemoOperations
+ * by implementing default DifferentiableWrappedDemoOperations methods. 
  * 
  * @author Michael Lavelle
  */
 public class DemoFloatOperationsAutogradValueImpl extends AutogradValueImpl<DemoAutogradValue<DemoFloatOperations>, DemoFloatOperations, DemoSize> implements AutogradValue<DemoAutogradValue<DemoFloatOperations>, DemoFloatOperations, DemoSize>, DifferentiableWrappedDemoOperations<DemoAutogradValue<DemoFloatOperations>, DemoFloatOperations, DemoSize>, DemoAutogradValue<DemoFloatOperations> {
-
-	private DemoSize size;
 	
-	public DemoFloatOperationsAutogradValueImpl(DemoSize size) {
-		this.size = size;
+	public DemoFloatOperationsAutogradValueImpl(Supplier<DemoFloatOperations> data, DemoSize size) {
+		this(data, size, new ArrayList<>());
+	}
+	
+	public DemoFloatOperationsAutogradValueImpl(float data, DemoSize size) {
+		this(() -> new DemoFloatOperations(data, size), size, new ArrayList<>());
+	}
+	
+	protected DemoFloatOperationsAutogradValueImpl(Supplier<DemoFloatOperations> data, DemoSize size, List<Node<?>> children) {
+		super(data, size, children);
 	}
 	
 	@Override
@@ -41,6 +53,11 @@ public class DemoFloatOperationsAutogradValueImpl extends AutogradValueImpl<Demo
 
 	@Override
 	public DemoSize size() {
-		return size;
+		return context();
+	}
+
+	@Override
+	protected DemoAutogradValue<DemoFloatOperations> createAutogradValue(Supplier<DemoFloatOperations> data, DemoSize size, List<Node<?>> children) {
+		return new DemoFloatOperationsAutogradValueImpl(data, size, children);
 	}	
 }

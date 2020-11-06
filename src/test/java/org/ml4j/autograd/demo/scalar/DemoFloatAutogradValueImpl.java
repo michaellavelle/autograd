@@ -14,11 +14,16 @@
 
 package org.ml4j.autograd.demo.scalar;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.demo.DemoAutogradValue;
 import org.ml4j.autograd.demo.DemoOperations;
 import org.ml4j.autograd.demo.DemoSize;
 import org.ml4j.autograd.impl.AutogradValueImpl;
+import org.ml4j.autograd.node.Node;
 
 /**
  * An AutogradValue implementation that supports the operations defined bt DemoOperations.
@@ -26,9 +31,16 @@ import org.ml4j.autograd.impl.AutogradValueImpl;
  * @author Michael Lavelle
  */
 public class DemoFloatAutogradValueImpl extends AutogradValueImpl<DemoAutogradValue<Float>, Float, DemoSize> implements AutogradValue<DemoAutogradValue<Float>, Float, DemoSize>, DemoOperations<DemoAutogradValue<Float>>, DemoAutogradValue<Float> {
-
 	
-    @Override
+	public DemoFloatAutogradValueImpl(Supplier<Float> data, DemoSize size) {
+		this(data, size, new ArrayList<>());
+	}
+	
+    protected DemoFloatAutogradValueImpl(Supplier<Float> data, DemoSize size, List<Node<?>> childen) {
+		super(data, size, childen);
+	}
+
+	@Override
     public float[] getDataAsFloatArray() {
         return new float[]{data().get()};
     }
@@ -111,5 +123,10 @@ public class DemoFloatAutogradValueImpl extends AutogradValueImpl<DemoAutogradVa
 	@Override
 	public DemoAutogradValue<Float> gte(float value) {
         return applyUnaryOperator(f -> f >= value ? 1f : 0f, (g, v) -> g.mul(v.gte(value)), "gt", s -> s);
+	}
+
+	@Override
+	protected DemoAutogradValue<Float> createAutogradValue(Supplier<Float> data, DemoSize size, List<Node<?>> childen) {
+		return new DemoFloatAutogradValueImpl(data, size, childen);
 	}
 }
