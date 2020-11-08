@@ -183,20 +183,45 @@ public class DemoFloatAutogradValueImplTest {
 		Assertions.assertNull(result.grad());
 	}
 	
-	
 	@Test
-	public void testSetGradientThrowsIllegalStateException_WhenRequiresGradIsFalse() {
+	public void testSetGradientDoesNotThrowIllegalStateException_WhenRequiresGradIsFalse_WhenGradNotAlreadySet() {
 		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
 		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size);
 
+		first.getGradNode().setValue(() -> grad);
+		
+		Assertions.assertSame(grad, first.getGradNode().getValue().get());
+	}
+	
+	@Test
+	public void testSetGradientDoesNotThrowIllegalStateException_WhenRequiresGradIsTrue_WhenGradNotAlreadySet() {
+		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size).requires_grad_(true);
+		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size);
+
+		first.getGradNode().setValue(() -> grad);
+	
+		
+		Assertions.assertSame(grad, first.getGradNode().getValue().get());
+	}
+	
+	
+	@Test
+	public void testSetGradientThrowsIllegalStateException_WhenRequiresGradIsFalse_WhenGradAlreadySet() {
+		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
+		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size);
+
+		first.getGradNode().setValue(() -> grad);
+		
 		Assertions.assertThrows(IllegalStateException.class, () -> first.getGradNode().setValue(() -> grad));
 	}
 	
 	@Test
-	public void testSetGradientThrowsIllegalStateException_WhenRequiresGradIsTrue() {
+	public void testSetGradientThrowsIllegalStateException_WhenRequiresGradIsTrue_WhenGradAlreadySet() {
 		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size).requires_grad_(true);
 		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size);
 
+		first.getGradNode().setValue(() -> grad);
+		
 		Assertions.assertThrows(IllegalStateException.class, () -> first.getGradNode().setValue(() -> grad));
 	}
 

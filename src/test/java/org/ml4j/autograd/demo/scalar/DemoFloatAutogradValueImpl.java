@@ -101,7 +101,7 @@ public class DemoFloatAutogradValueImpl extends AutogradValueImpl<DemoAutogradVa
     }
 
     @Override
-    public DemoAutogradValue<Float> self() {
+    public DemoAutogradValue<Float> getInitialInstance() {
         return this;
     }
 
@@ -112,7 +112,7 @@ public class DemoFloatAutogradValueImpl extends AutogradValueImpl<DemoAutogradVa
 
 	@Override
 	public DemoAutogradValue<Float> sub_(DemoAutogradValue<Float> other) {
-        return applyInlineBinaryOperator(other, (f, s) -> f + s, "sub");
+        return applyInlineBinaryOperator(other, (f, s) -> f - s, "sub");
 	}
 
 	@Override
@@ -128,5 +128,15 @@ public class DemoFloatAutogradValueImpl extends AutogradValueImpl<DemoAutogradVa
 	@Override
 	protected DemoAutogradValue<Float> createAutogradValue(Supplier<Float> data, DemoSize size, List<Node<?>> childen) {
 		return new DemoFloatAutogradValueImpl(data, size, childen);
+	}
+
+	@Override
+	protected Supplier<Float> additiveIdentity() {
+		return () -> 0f;
+	}
+
+	@Override
+	protected Supplier<Float> multiplicativeIdentity() {
+		return () -> 1f;
 	}
 }

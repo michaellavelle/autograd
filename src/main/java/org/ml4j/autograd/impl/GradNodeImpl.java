@@ -1,3 +1,17 @@
+/*
+ * Copyright 2020 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package org.ml4j.autograd.impl;
 
 import java.util.ArrayList;
@@ -7,6 +21,13 @@ import java.util.function.Supplier;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.node.GradNode;
 
+/**
+ * Default implementation of GradNode.
+ * 
+ * @author Michael Lavelle
+ *
+ * @param <V> The type of AutogradValue associated with this Node
+ */
 public class GradNodeImpl<V extends AutogradValue<V, ?, ?>> extends NodeImpl<V> implements GradNode<V> {
 
     private Supplier<Optional<V>> nativeGradientSupplier;
@@ -19,8 +40,8 @@ public class GradNodeImpl<V extends AutogradValue<V, ?, ?>> extends NodeImpl<V> 
 
     @Override
     public GradNode<V> setValue(Supplier<V> value) {
-        if (this.value != null) {
-            throw new IllegalStateException();  // Put back
+        if (this.value != null && this.value.get() != null) {
+            throw new IllegalStateException();
         }
         if (this.prev == null) {
             this.prev = new ArrayList<>();

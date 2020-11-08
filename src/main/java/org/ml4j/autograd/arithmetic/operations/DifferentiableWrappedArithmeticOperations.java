@@ -100,7 +100,7 @@ public interface DifferentiableWrappedArithmeticOperations<V extends ArithmeticO
 
     @Override
     default V sub_(V other) {
-        return applyInlineBinaryOperator(other, D::sub, "sub");
+        return applyInlineBinaryOperator(other, D::sub_, "sub");
     }
 
     @Override

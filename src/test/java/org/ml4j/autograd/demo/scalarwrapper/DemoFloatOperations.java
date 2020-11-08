@@ -114,7 +114,7 @@ public class DemoFloatOperations implements DemoOperations<DemoFloatOperations> 
 
 	@Override
 	public DemoFloatOperations relu() {
-		return create(value < 0 ? 0f : 1f);
+		return create(value < 0 ? 0f : value);
 	}
 
 }

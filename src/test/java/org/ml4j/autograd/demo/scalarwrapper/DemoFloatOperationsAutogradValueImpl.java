@@ -45,11 +45,6 @@ public class DemoFloatOperationsAutogradValueImpl extends AutogradValueImpl<Demo
 	protected DemoFloatOperationsAutogradValueImpl(Supplier<DemoFloatOperations> data, DemoSize size, List<Node<?>> children) {
 		super(data, size, children);
 	}
-	
-	@Override
-	public DemoAutogradValue<DemoFloatOperations> self() {
-		return this;
-	}
 
 	@Override
 	public DemoSize size() {
@@ -59,5 +54,20 @@ public class DemoFloatOperationsAutogradValueImpl extends AutogradValueImpl<Demo
 	@Override
 	protected DemoAutogradValue<DemoFloatOperations> createAutogradValue(Supplier<DemoFloatOperations> data, DemoSize size, List<Node<?>> children) {
 		return new DemoFloatOperationsAutogradValueImpl(data, size, children);
+	}
+
+	@Override
+	protected DemoAutogradValue<DemoFloatOperations> getInitialInstance() {
+		return this;
+	}
+
+	@Override
+	protected Supplier<DemoFloatOperations> multiplicativeIdentity() {
+		return () -> new DemoFloatOperations(1, size());
+	}
+
+	@Override
+	protected Supplier<DemoFloatOperations> additiveIdentity() {
+		return () -> new DemoFloatOperations(0, size());
 	}	
 }

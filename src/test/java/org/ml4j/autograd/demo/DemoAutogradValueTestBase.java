@@ -19,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.ml4j.autograd.BackwardConfig;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /**
@@ -31,35 +30,11 @@ import org.mockito.MockitoAnnotations;
 public abstract class DemoAutogradValueTestBase<D> {
 
     @Mock
-	protected DemoAutogradValueFactory<D> gradValueFactory;
-
-    @Mock
-    protected DemoAutogradValue<D> mockGradValue;
-
-    @Mock
     protected DemoSize size;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        Mockito.when(gradValueFactory.create(Mockito.any(), Mockito.any())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.requires_grad_(Mockito.anyBoolean())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.mul(Mockito.any())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.add(Mockito.any())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.sub(Mockito.any())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.div(Mockito.any())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.add(Mockito.anyFloat())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.mul(Mockito.anyFloat())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.div(Mockito.anyFloat())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.sub(Mockito.anyFloat())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.add(Mockito.anyInt())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.mul(Mockito.anyInt())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.div(Mockito.anyInt())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.sub(Mockito.anyInt())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.relu()).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.grad()).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.name_(Mockito.anyString())).thenReturn(mockGradValue);
-        Mockito.when(mockGradValue.getDataAsFloatArray()).thenReturn(new float[]{1f});
     }
 
     protected abstract DemoAutogradValue<D> createGradValue(float value, boolean requires_grad);
@@ -97,17 +72,11 @@ public abstract class DemoAutogradValueTestBase<D> {
 
         g = g.add(ten().div(f));
 
-        Mockito.when(mockGradValue.data()).thenReturn(() -> createData(24.70f));
-
         assertEquals(createData(24.70f), g.data().get());
 
         g.backward();
 
-        Mockito.when(mockGradValue.data()).thenReturn(() ->createData(138.83f));
-
         assertEquals(createData(138.83f), a.grad().data().get());
-
-        Mockito.when(mockGradValue.data()).thenReturn(() -> createData(645.58f));
 
         assertEquals(createData(645.58f), b.grad().data().get());
     }
@@ -134,11 +103,7 @@ public abstract class DemoAutogradValueTestBase<D> {
         var xGradAfterFirstBackward = x.grad();
         var yGradAfterFirstBackward = y.grad();
 
-        Mockito.when(mockGradValue.data()).thenReturn(() -> createData(1.6f));
-
         assertEquals(createData(1.6f), xGradAfterFirstBackward.data().get());
-
-        Mockito.when(mockGradValue.data()).thenReturn(() -> createData(1.7f));
 
         assertEquals(createData(1.7f), yGradAfterFirstBackward.data().get());
 
@@ -152,14 +117,10 @@ public abstract class DemoAutogradValueTestBase<D> {
         var xGradAfterSecondBackward = x.grad();
         var yGradAfterSecondBackward = y.grad();
 
-        Mockito.when(mockGradValue.data()).thenReturn(() -> createData(6.6f));
-
         Assertions.assertSame(xGradAfterFirstBackward, xGradAfterSecondBackward);
         assertEquals(createData(6.6f), xGradAfterSecondBackward.data().get());
 
         Assertions.assertSame(yGradAfterFirstBackward, yGradAfterSecondBackward);
-
-        Mockito.when(mockGradValue.data()).thenReturn(() -> createData(5.7f));
 
         assertEquals(createData(5.7f), yGradAfterSecondBackward.data().get());
 
