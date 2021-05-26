@@ -12,7 +12,7 @@
  * the License.
  */
 
-package org.ml4j.autograd.demo;
+package org.ml4j.autograd.demo.providertensor;
 
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.DataSupplier;
@@ -22,8 +22,6 @@ import org.ml4j.autograd.DataSupplier;
  * 
  * @author Michael Lavelle
 */
-public interface DemoAutogradValue<D> extends AutogradValue<DemoAutogradValue<D>, D, DemoSize>, DemoOperations<DemoAutogradValue<D>>, DataSupplier<D> {
-
-	
+public interface ProviderTensor<V, D> extends AutogradValue<V, D, Size>, TensorOperations<V>, DataSupplier<D> {
 
 }

@@ -11,19 +11,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.jvmpy.python;
 
-package org.ml4j.autograd.demo;
-
-import org.ml4j.autograd.AutogradValue;
-import org.ml4j.autograd.DataSupplier;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
- * Interface of our DemoAutogradValue - extending from both AutogradValue and DemoOperations.
+ * A typed Python callable attribute 
  * 
  * @author Michael Lavelle
-*/
-public interface DemoAutogradValue<D> extends AutogradValue<DemoAutogradValue<D>, D, DemoSize>, DemoOperations<DemoAutogradValue<D>>, DataSupplier<D> {
-
+ *
+ * @param <T> The type of value being wrapped.
+ * @param <I> The input type of the callable being wrapped.
+ * @param <O> The output type of the callable being wrapped.
+ */
+public class CallableAttribute<T extends Function<I, O>, I, O> extends Attribute<T> implements Function<I, O>, Supplier<T> {
 	
-
+	@Override
+	public O apply(I t) {
+		return value.apply(t);
+	}
 }

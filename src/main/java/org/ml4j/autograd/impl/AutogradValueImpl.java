@@ -25,12 +25,14 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.BackwardConfig;
+import org.ml4j.autograd.CachingSupplier;
 import org.ml4j.autograd.node.GradNode;
 import org.ml4j.autograd.node.Node;
 import org.ml4j.autograd.node.ValueNode;
@@ -51,13 +53,13 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
     private GradNode<V> gradNode;
     private ValueNode<V> valueNode;
     private C context;
-    private Supplier<D> data;
+    private CachingSupplier<D> data;
     private boolean requires_grad;
     private String name;
     private V cachedGrad;
 
     protected AutogradValueImpl(Supplier<D> data, C context, List<Node<?>> children) {
-        this.data = data;
+        this.data = new CachingSupplierImpl<>(data);
         this.context = context;
         this.valueNode = new NodeImpl<>(() -> self(), children);
         this.gradNode = new GradNodeImpl<V>(() -> null, () -> Optional.empty());
@@ -66,7 +68,20 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         }
         this.currentInstance = getInitialInstance();
     }
-
+    
+    
+    protected <W, E> AutogradValueImpl(AutogradValue<W, E, C> other, Function<E, D> mapper, Function<V, W> mapper1, Function<W, V> mapper2) {
+        this.data = new CachingSupplierImpl<>(() -> mapper.apply(other.data().get()));
+        this.context = other.context();
+        this.valueNode = new NodeImpl<>(() -> self(), other.getValueNode().prev(), 
+        		other.getValueNode().getBackwardFunction() == null ? null : (v, c) -> other.getValueNode().getBackwardFunction().accept(mapper1.apply(v), c));
+        this.gradNode = other.getGradNode().convert(mapper2, mapper1);
+        if (data == null) {
+            throw new IllegalArgumentException("Data supplier can not be null");
+        }
+        this.currentInstance = getInitialInstance();
+    }
+   
 
     @Override
     public V self() {
@@ -353,7 +368,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
 
     @Override
     public V data_(Supplier<D> data) {
-        this.data = data;
+        this.data = new CachingSupplierImpl<>(data);
         return self();
     }
 

@@ -12,35 +12,16 @@
  * the License.
  */
 
-package org.ml4j.autograd.demo;
+package org.ml4j.autograd.demo.providertensor;
 
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.arithmetic.operations.DifferentiableWrappedArithmeticOperations;
 
-public interface DifferentiableWrappedDemoOperations<V extends DemoOperations<V>, D extends DemoOperations<D>, C> extends DifferentiableWrappedArithmeticOperations<V, D, C>, AutogradValue<V, D, C>, DemoOperations<V> {
+public interface DifferentiableWrappedTensorOperations<V extends TensorOperations<V>, D extends TensorOperations<D>, C> extends DifferentiableWrappedArithmeticOperations<V, D, C>, AutogradValue<V, D, C>, TensorOperations<V> {
 
 	@Override
 	default V relu() {
         return applyUnaryOperator(D::relu, (g, v) -> g.mul(v.gt(0)), "gt", s -> s);
 	}
-	
-	@Override
-	default V sigmoid() {
-        return applyUnaryOperator(D::sigmoid, (g, v) -> g.mul(sigGrad(v.getDataAsFloatArray()[0])), "gt", s -> s);
-	}
-	
-	@Override
-	default V bernoulli() {
-        return applyUnaryOperator(D::bernoulli, (g, v) -> g, "gt", s -> s);
-	}
-	
-	 private float sig(float x) {
-	    	return 1f / (1f + (float)Math.exp(-x));
-	    }
-	    
-	    private float sigGrad(float x) {
-	    	float s = sig(x);
-	    	return s * ( 1 - s);
-	    }
 
 }

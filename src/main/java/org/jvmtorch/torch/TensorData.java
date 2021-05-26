@@ -11,19 +11,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package org.ml4j.autograd.demo;
-
-import org.ml4j.autograd.AutogradValue;
-import org.ml4j.autograd.DataSupplier;
+package org.jvmtorch.torch;
 
 /**
- * Interface of our DemoAutogradValue - extending from both AutogradValue and DemoOperations.
+ * Non-generic extension of TensorOperations used by Tensor and
+ * SymbolicTensor to encapsulate the raw operations on the data.
  * 
  * @author Michael Lavelle
-*/
-public interface DemoAutogradValue<D> extends AutogradValue<DemoAutogradValue<D>, D, DemoSize>, DemoOperations<DemoAutogradValue<D>>, DataSupplier<D> {
-
-	
+ */
+public interface TensorData extends TensorOperations<TensorData> {
 
 }

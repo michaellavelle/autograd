@@ -15,11 +15,16 @@
 package org.ml4j.autograd.impl;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.node.GradNode;
+import org.ml4j.autograd.node.Node;
 
 /**
  * Default implementation of GradNode.
@@ -36,6 +41,18 @@ public class GradNodeImpl<V extends AutogradValue<V, ?, ?>> extends NodeImpl<V> 
     public GradNodeImpl(Supplier<V> value, Supplier<Optional<V>> nativeGradientSupplier) {
         super(value);
         this.nativeGradientSupplier = nativeGradientSupplier;
+    }
+    
+    protected <W> GradNodeImpl(Supplier<W> value, List<Node<?>> children, 
+    		BiConsumer<W, BackwardConfig> wrapBackward,
+    		Function<W, V> valueMapper, Function<V, W> valueMapper2, Supplier<Optional<W>> nativeGradientSupplier) {
+    	super(value, children, wrapBackward, valueMapper, valueMapper2);
+       
+    }
+    
+    @Override
+    public <W extends AutogradValue<W, ?, ?>> GradNode<W> convert(Function<V, W> valueMapper, Function<W, V> valueMapper2) {
+    	return new GradNodeImpl<W>(value, prev(), wrapBackward, valueMapper, valueMapper2, () -> Optional.empty());
     }
 
     @Override

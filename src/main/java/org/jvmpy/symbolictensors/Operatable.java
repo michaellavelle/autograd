@@ -11,19 +11,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.jvmpy.symbolictensors;
 
-package org.ml4j.autograd.demo;
+public interface Operatable<T, S, O> {
 
-import org.ml4j.autograd.AutogradValue;
-import org.ml4j.autograd.DataSupplier;
+    /**
+     * Perform an inline operation on the underlying tensor,
+     * potentially lazily.
+     *
+     * @param operation The operation to perform.
+     */
+    void performInlineOperation(Operation<T, S> operation);
 
-/**
- * Interface of our DemoAutogradValue - extending from both AutogradValue and DemoOperations.
- * 
- * @author Michael Lavelle
-*/
-public interface DemoAutogradValue<D> extends AutogradValue<DemoAutogradValue<D>, D, DemoSize>, DemoOperations<DemoAutogradValue<D>>, DataSupplier<D> {
-
-	
-
+    /**
+     * Perform an operation
+     *
+     * @param newTensorName
+     * @param operation
+     * @return
+     */
+    O performUnaryMappingOperation(Operation<T, S> operation);
 }

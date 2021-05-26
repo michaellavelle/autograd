@@ -12,18 +12,19 @@
  * the License.
  */
 
-package org.ml4j.autograd.demo;
+package org.ml4j.autograd.demo.providertensor;
 
-import org.ml4j.autograd.AutogradValue;
-import org.ml4j.autograd.DataSupplier;
+import org.ml4j.autograd.arithmetic.operations.ArithmeticOperations;
 
 /**
- * Interface of our DemoAutogradValue - extending from both AutogradValue and DemoOperations.
+ * Operations required to be supported by an AutogradValue tested by DemoAutogradValueTest.
  * 
  * @author Michael Lavelle
-*/
-public interface DemoAutogradValue<D> extends AutogradValue<DemoAutogradValue<D>, D, DemoSize>, DemoOperations<DemoAutogradValue<D>>, DataSupplier<D> {
+ */
+public interface TensorOperations<V> extends ArithmeticOperations<V> {
 
-	
+    Size size();
+
+    V relu();
 
 }

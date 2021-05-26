@@ -12,18 +12,15 @@
  * the License.
  */
 
-package org.ml4j.autograd.demo;
+package org.ml4j.autograd.demo.providertensor;
 
-import org.ml4j.autograd.AutogradValue;
-import org.ml4j.autograd.DataSupplier;
+import org.ml4j.autograd.AutogradValueFactory;
 
 /**
- * Interface of our DemoAutogradValue - extending from both AutogradValue and DemoOperations.
+ * An AutogradValueFactory implementation for DemoAutogradValues.
  * 
  * @author Michael Lavelle
-*/
-public interface DemoAutogradValue<D> extends AutogradValue<DemoAutogradValue<D>, D, DemoSize>, DemoOperations<DemoAutogradValue<D>>, DataSupplier<D> {
-
-	
+ */
+public interface DJLTensorFactory extends AutogradValueFactory<DJLTensor, DJLTensorOperations, Size> {
 
 }

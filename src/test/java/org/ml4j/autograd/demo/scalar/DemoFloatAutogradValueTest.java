@@ -14,7 +14,11 @@
 
 package org.ml4j.autograd.demo.scalar;
 
+import java.util.Random;
+
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.demo.DemoAutogradValue;
 import org.ml4j.autograd.demo.DemoAutogradValueTestBase;
 
@@ -28,6 +32,60 @@ public class DemoFloatAutogradValueTest extends DemoAutogradValueTestBase<Float>
 	@Override
 	protected DemoAutogradValue<Float> createGradValue(Float value, boolean requires_grad) {
         return new DemoFloatAutogradValueImpl(() -> value, size).requires_grad_(requires_grad);
+	}
+	
+	@Test
+	public void blah() {
+		
+		var weight = createGradValue(0, true);
+		var bias = createGradValue(-0.03f, true);
+		
+		var x = createGradValue(4f, false);
+		var x2 = createGradValue(3f, false);
+
+		var target = createGradValue(11f, false);
+		var target2 = createGradValue(16f, false);
+		
+		
+		//var y = x.apply(DemoAutogradValue::neg);
+
+		for (int i = 0; i < 900; i++) {
+						
+			var sig = weight.sigmoid().bernoulli().sub(0.5f).mul(2);
+
+			//System.out.println("Weight:" + weight.getDataAsFloatArray()[0]);
+			DemoAutogradValue<Float> y = null;
+			DemoAutogradValue<Float> y2 = null;
+
+			if (sig.data().get() == 0) {
+				y = bias.relu();
+				y2 = bias.relu();
+
+			} else {
+				y = x.add(bias).relu();
+				y2 = x2.add(bias).relu();
+
+			}
+			
+			
+			var diff = target.sub(y).add(target2.sub(y2)).div(2);
+			//System.out.println("Target:" + y.getDataAsFloatArray()[0] + " Loss:" + diff.getDataAsFloatArray()[0]);
+			System.out.println(diff.getDataAsFloatArray()[0]);
+
+			diff.backward();
+			var weightGrad = weight.grad();
+			var biasGrad = bias.grad();
+			if (weightGrad != null) {
+				weight = weight.sub(weightGrad.mul(0.005f));
+			}
+			if (biasGrad != null) {
+				bias = bias.sub(biasGrad.mul(0.005f));
+			}
+		}
+		
+		
+		
+		
 	}
 
 	@Override

@@ -17,6 +17,7 @@ package org.ml4j.autograd.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.BackwardConfig;
@@ -45,7 +46,26 @@ public class NodeImpl<V extends AutogradValue<V, ?, ?>> implements ValueNode<V> 
         this.value = value;
         this.prev = children;
     }
-
+    
+    public NodeImpl(Supplier<V> value, List<Node<?>> children, BiConsumer<V, BackwardConfig> wrapBackward) {
+        this.value = value;
+        this.prev = children;
+        this.wrapBackward = wrapBackward;
+    }
+    
+    public <W extends AutogradValue<W, ?, ?>> Node<W> convert(Function<V, W> valueMapper, Function<W, V> valueMapper2) {
+    	return new NodeImpl<W>(value, prev(), wrapBackward, valueMapper, valueMapper2);
+    }
+   
+    
+    protected <W> NodeImpl(Supplier<W> value, List<Node<?>> children, 
+    		BiConsumer<W, BackwardConfig> wrapBackward,
+    		Function<W, V> valueMapper, Function<V, W> valueMapper2) {
+        this.value = () -> value.get() == null ? null : valueMapper.apply(value.get());
+        this.prev = children;
+        this.wrapBackward = wrapBackward == null ? null : (v, c) -> wrapBackward.accept(valueMapper2.apply(v), c);
+    }
+    
     @Override
     public String toString() {
         if (prev != null && prev.size() > 0) {
@@ -76,4 +96,9 @@ public class NodeImpl<V extends AutogradValue<V, ?, ?>> implements ValueNode<V> 
     public void setBackwardFunction(BiConsumer<V, BackwardConfig> wrapBackward) {
         this.wrapBackward = wrapBackward;
     }
+
+	@Override
+	public BiConsumer<V, BackwardConfig> getBackwardFunction() {
+		return wrapBackward;
+	}
 }

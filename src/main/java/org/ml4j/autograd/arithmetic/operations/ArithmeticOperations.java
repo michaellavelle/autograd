@@ -28,7 +28,7 @@ public interface ArithmeticOperations<V> extends Accumulatable<V> {
 
     float[] getDataAsFloatArray();
 
-    V add(V other);
+    //V add(V other);
     
     V add(float other);
 

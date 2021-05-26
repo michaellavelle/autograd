@@ -11,19 +11,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.jvmpy.python;
 
-package org.ml4j.autograd.demo;
-
-import org.ml4j.autograd.AutogradValue;
-import org.ml4j.autograd.DataSupplier;
+import java.util.function.Supplier;
 
 /**
- * Interface of our DemoAutogradValue - extending from both AutogradValue and DemoOperations.
+ * A typed Python attribute wrapper.
  * 
  * @author Michael Lavelle
-*/
-public interface DemoAutogradValue<D> extends AutogradValue<DemoAutogradValue<D>, D, DemoSize>, DemoOperations<DemoAutogradValue<D>>, DataSupplier<D> {
-
+ *
+ * @param <T> The type of attribute being wrapped.
+ */
+public class Attribute<T> implements Supplier<T> {
 	
+	public T value;
 
+	@Override
+	public T get() {
+		return value;
+	}
+
+	@Override
+	public String toString() {
+		return value == null ? "None" : value.toString();
+	}	
 }

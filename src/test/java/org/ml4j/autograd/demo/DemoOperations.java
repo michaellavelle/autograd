@@ -26,5 +26,10 @@ public interface DemoOperations<V> extends ArithmeticOperations<V> {
     DemoSize size();
 
     V relu();
+    
+    V sigmoid();
+    
+    V bernoulli();
+
 
 }

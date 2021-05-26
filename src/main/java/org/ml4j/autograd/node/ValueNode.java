@@ -35,5 +35,8 @@ public interface ValueNode<V> extends Node<V> {
      *                          may pass the gradient of the value back to previous nodes in the compulation graph.s
      */
     void setBackwardFunction(BiConsumer<V, BackwardConfig> backwardFunction);
+    
+    
+    BiConsumer<V, BackwardConfig> getBackwardFunction();
 
 }

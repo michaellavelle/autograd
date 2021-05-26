@@ -17,6 +17,7 @@ package org.ml4j.autograd.demo.scalar;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.demo.DemoAutogradValue;
@@ -88,6 +89,34 @@ public class DemoFloatAutogradValueImpl extends AutogradValueImpl<DemoAutogradVa
     @Override
     public DemoAutogradValue<Float> relu() {
         return applyUnaryOperator(f -> f < 0 ? 0 : f, (g, v) -> g.mul(v.gt(0)), "relu", s -> s);
+    }
+    
+    @Override
+    public DemoAutogradValue<Float> bernoulli() {
+        return applyUnaryOperator(f -> bern(f), (g, v) -> g, "relu", s -> s);
+    }
+    
+    private float bern(float v) {
+    	float r = (float)Math.random();
+    	if (r < v) {
+    		return 1;
+    	} else {
+    		return 0;
+    	}
+    }
+    
+    private float sig(float x) {
+    	return 1f / (1f + (float)Math.exp(-x));
+    }
+    
+    private float sigGrad(float x) {
+    	float s = sig(x);
+    	return s * ( 1 - s);
+    }
+    
+    @Override
+    public DemoAutogradValue<Float> sigmoid() {
+        return applyUnaryOperator(f -> sig(f), (g, v) -> g.mul(sigGrad(v.data().get())) , "sigmoid", s -> s);
     }
 
     @Override

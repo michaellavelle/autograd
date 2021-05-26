@@ -11,19 +11,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.jvmpy.symbolictensors;
 
-package org.ml4j.autograd.demo;
+public interface TensorDimensionsContainer<S> {
 
-import org.ml4j.autograd.AutogradValue;
-import org.ml4j.autograd.DataSupplier;
-
-/**
- * Interface of our DemoAutogradValue - extending from both AutogradValue and DemoOperations.
- * 
- * @author Michael Lavelle
-*/
-public interface DemoAutogradValue<D> extends AutogradValue<DemoAutogradValue<D>, D, DemoSize>, DemoOperations<DemoAutogradValue<D>>, DataSupplier<D> {
-
-	
-
+	S size();
 }

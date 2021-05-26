@@ -69,5 +69,10 @@ public class DemoFloatOperationsAutogradValueImpl extends AutogradValueImpl<Demo
 	@Override
 	protected Supplier<DemoFloatOperations> additiveIdentity() {
 		return () -> new DemoFloatOperations(0, size());
-	}	
+	}
+
+	@Override
+	public DemoAutogradValue<DemoFloatOperations> add(DemoAutogradValue<DemoFloatOperations> other) {
+		return applyBinaryOperator(other, (f, s) -> f.add(s), (g, p) -> g, (g, p) -> g, "add", (f, s) -> f);
+	}
 }

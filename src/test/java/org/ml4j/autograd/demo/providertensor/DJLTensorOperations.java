@@ -12,17 +12,14 @@
  * the License.
  */
 
-package org.ml4j.autograd.demo.scalarwrapper;
+package org.ml4j.autograd.demo.providertensor;
 
-import org.ml4j.autograd.demo.DemoOperations;
-import org.ml4j.autograd.demo.DemoSize;
-
-public class DemoFloatOperations implements DemoOperations<DemoFloatOperations> {
+public class DJLTensorOperations implements TensorOperations<DJLTensorOperations> {
 	
 	private float value;
-	private DemoSize size;
+	private Size size;
 	
-	public DemoFloatOperations(float value, DemoSize size) {
+	public DJLTensorOperations(float value, Size size) {
 		this.value = value;
 		this.size = size;
 	}
@@ -31,8 +28,8 @@ public class DemoFloatOperations implements DemoOperations<DemoFloatOperations> 
 		return value;
 	}
 	
-	protected DemoFloatOperations create(float value) {
-		return new DemoFloatOperations(value, size);
+	protected DJLTensorOperations create(float value) {
+		return new DJLTensorOperations(value, size);
 	}
 	
 	@Override
@@ -41,99 +38,80 @@ public class DemoFloatOperations implements DemoOperations<DemoFloatOperations> 
 	}
 
 	@Override
-	public DemoFloatOperations add(DemoFloatOperations other) {
+	public DJLTensorOperations add(DJLTensorOperations other) {
 		return create(value + other.value);
 	}
 
 	@Override
-	public DemoFloatOperations add(float other) {
+	public DJLTensorOperations add(float other) {
 		return create(value + other);
 	}
 
 	@Override
-	public DemoFloatOperations sub(DemoFloatOperations other) {
+	public DJLTensorOperations sub(DJLTensorOperations other) {
 		return create(value - other.value);
 	}
 
 	@Override
-	public DemoFloatOperations sub(float other) {
+	public DJLTensorOperations sub(float other) {
 		return create(value - other);
 	}
 
 	@Override
-	public DemoFloatOperations mul(DemoFloatOperations other) {
+	public DJLTensorOperations mul(DJLTensorOperations other) {
 		return create(value * other.value);
 	}
 
 	@Override
-	public DemoFloatOperations mul(float other) {
+	public DJLTensorOperations mul(float other) {
 		return create(value * other);
 	}
 
 	@Override
-	public DemoFloatOperations div(DemoFloatOperations other) {
+	public DJLTensorOperations div(DJLTensorOperations other) {
 		return create(value / other.value);
 	}
 
 	@Override
-	public DemoFloatOperations div(float other) {
+	public DJLTensorOperations div(float other) {
 		return create(value / other);
 	}
 
 	@Override
-	public DemoFloatOperations add_(DemoFloatOperations other) {
+	public DJLTensorOperations add_(DJLTensorOperations other) {
 		value = value + other.value;
 		return this;
 	}
 
 	@Override
-	public DemoFloatOperations sub_(DemoFloatOperations other) {
+	public DJLTensorOperations sub_(DJLTensorOperations other) {
 		value = value - other.value;
 		return this;
 	}
 
 	@Override
-	public DemoFloatOperations neg() {
+	public DJLTensorOperations neg() {
 		return create(-value);
 	}
 
 	@Override
-	public DemoFloatOperations gt(float value) {
+	public DJLTensorOperations gt(float value) {
 		return create(this.value > value ? 1f : 0f);
 	}
 
 	@Override
-	public DemoFloatOperations gte(float value) {
+	public DJLTensorOperations gte(float value) {
 		return create(this.value >= value ? 1f : 0f);
 	}
 
 	@Override
-	public DemoSize size() {
+	public Size size() {
 		return size;
 	}
 
 	@Override
-	public DemoFloatOperations relu() {
-		return create(value < 0 ? 0f : value);
-	}
-
-	@Override
-	public DemoFloatOperations sigmoid() {
-		return create(1f / (1f + (float)Math.exp(-value)));
-	}
-	
-	 private float bern(float v) {
-	    	float r = (float)Math.random();
-	    	if (r < v) {
-	    		return 1;
-	    	} else {
-	    		return 0;
-	    	}
-	    }
-
-	@Override
-	public DemoFloatOperations bernoulli() {
-		return create(bern(value));
+	public DJLTensorOperations relu() {
+		return create(value < 0 ? 0f : 1f);
 	}
 
 }

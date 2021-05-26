@@ -14,6 +14,8 @@
 
 package org.ml4j.autograd;
 
+import java.util.function.UnaryOperator;
+
 import org.ml4j.autograd.node.GradNode;
 import org.ml4j.autograd.node.ValueNode;
 import org.ml4j.autograd.operators.DifferentiableBinaryOperator;
@@ -86,6 +88,11 @@ public interface AutogradValue<V, D, C> extends Value<V, D, C>, Accumulatable<V>
      * @return A new AutogradValue containing the result of the operation.
      */
     V apply(DifferentiableUnaryOperator<V, D, C> op);
+    
+    
+    default V apply(UnaryOperator<V> op) {
+        return op.apply(self());
+    }
 
     /**
      * Applies the operator to this AutogradValue, and the specified other AutogradValue.

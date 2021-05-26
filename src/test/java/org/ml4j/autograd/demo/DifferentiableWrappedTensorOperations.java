@@ -14,10 +14,11 @@
 
 package org.ml4j.autograd.demo;
 
+import org.jvmtorch.torch.TensorOperations;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.arithmetic.operations.DifferentiableWrappedArithmeticOperations;
 
-public interface DifferentiableWrappedDemoOperations<V extends DemoOperations<V>, D extends DemoOperations<D>, C> extends DifferentiableWrappedArithmeticOperations<V, D, C>, AutogradValue<V, D, C>, DemoOperations<V> {
+public interface DifferentiableWrappedTensorOperations<V extends TensorOperations<V>, D extends TensorOperations<D>, C> extends DifferentiableWrappedArithmeticOperations<V, D, C>, AutogradValue<V, D, C>, TensorOperations<V> {
 
 	@Override
 	default V relu() {
