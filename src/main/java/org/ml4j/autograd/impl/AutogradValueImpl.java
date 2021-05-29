@@ -50,7 +50,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
     private V currentInstance;
     private GradNode<V> gradNode;
     private ValueNode<V> valueNode;
-    private C context;
+    protected C context;
     private Supplier<D> data;
     private boolean requires_grad;
     private String name;
