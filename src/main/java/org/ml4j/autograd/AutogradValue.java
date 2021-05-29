@@ -80,6 +80,18 @@ public interface AutogradValue<V, D, C> extends Value<V, D, C>, Accumulatable<V>
     void backward(BackwardConfig config);
 
     /**
+     * Backpropagate the gradient of this AutogradValue back to previous nodes in the back propagation chain,
+     * with the default BackwardConfig ( false, false).
+     */
+    void backward(V gradient);
+
+    /**
+     * Backpropagate the gradient of this AutogradValue back to previous nodes in the back propagation chain,
+     * using the specified BackwardConfig.
+     */
+    void backward(V gradient, BackwardConfig config);
+
+    /**
      * Applies the operator to this AutogradValue.
      *
      * @param op The operator to apply.

@@ -257,6 +257,49 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         }
     }
 
+    @Override
+    public void backward(V g, BackwardConfig config) {
+        if (config == null) {
+            throw new IllegalArgumentException("Config must not be null");
+        }
+        // topological order all of the children in the graph
+        List<Node<?>> topo = new ArrayList<>();
+        Set<Node<?>> visited = new HashSet<>();
+        build_topo(topo, visited, getValueNode(), config);
+
+        // go one variable at a time and apply the chain rule to get its gradient
+        getGradNode().setValue(() -> g);
+
+        //grad = keep_graph ? create(identity.get(), c, "one", false).self() : create(identity.get(), c, "one", false).self();
+        List<Node<?>> reversed = new ArrayList<>();
+        reversed.addAll(topo);
+        Collections.reverse(reversed);
+        for (Node<?> value : reversed) {
+            value.backward(config);
+        }
+    }
+
+
+    @Override
+    public void backward(V g) {
+        BackwardConfig config = new BackwardConfig();
+        // topological order all of the children in the graph
+        List<Node<?>> topo = new ArrayList<>();
+        Set<Node<?>> visited = new HashSet<>();
+        build_topo(topo, visited, getValueNode(), config);
+
+        // go one variable at a time and apply the chain rule to get its gradient
+        getGradNode().setValue(() -> g);
+
+        //grad = keep_graph ? create(identity.get(), c, "one", false).self() : create(identity.get(), c, "one", false).self();
+        List<Node<?>> reversed = new ArrayList<>();
+        reversed.addAll(topo);
+        Collections.reverse(reversed);
+        for (Node<?> value : reversed) {
+            value.backward(config);
+        }
+    }
+
     protected abstract Supplier<D> multiplicativeIdentity();
 
     private void build_topo(List<Node<?>> topo, Set<Node<?>> visited, Node<?> v, BackwardConfig config) {

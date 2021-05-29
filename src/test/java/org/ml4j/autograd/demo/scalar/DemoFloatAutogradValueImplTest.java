@@ -101,7 +101,7 @@ public class DemoFloatAutogradValueImplTest {
 	@Test
 	public void testBackwardNullBackwardConfig() {
 		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
-		Assertions.assertThrows(IllegalArgumentException.class, () -> autogradValue.backward(null));
+		Assertions.assertThrows(IllegalArgumentException.class, () -> autogradValue.backward((BackwardConfig) null));
 	}
 	
 	@Test
