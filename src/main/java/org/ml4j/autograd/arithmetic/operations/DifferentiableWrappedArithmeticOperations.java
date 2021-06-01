@@ -34,12 +34,17 @@ public interface DifferentiableWrappedArithmeticOperations<V extends ArithmeticO
  
     @Override
     default V add(V other) {
-        return applyBinaryOperator(other, D::add, (g, p) -> g, (g, p) -> g, "add", (f, s) -> f);
+        return applyBinaryOperator(other, D::add, (g, p) -> g, (g, p) -> g, "add", (f, s) -> getMappedContext(f, s));
     }
    
     @Override
     default V add(float other) {
         return applyUnaryOperator(D::add, other, (g, v) -> g, "add", s -> s);
+    }
+
+    default C getMappedContext(C f, C s) {
+        System.out.println("Default mapped:" + f);
+        return f;
     }
 
     @Override

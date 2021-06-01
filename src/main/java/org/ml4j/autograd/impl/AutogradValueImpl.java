@@ -55,6 +55,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
     private boolean requires_grad;
     private String name;
     private V cachedGrad;
+    protected boolean create_graph;
 
     protected AutogradValueImpl(Supplier<D> data, C context, List<Node<?>> children) {
         this.data = data;
@@ -98,7 +99,9 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
                 Arrays.asList(getValueNode(), other.getValueNode()));
 
         gradValue.getValueNode().setBackwardFunction(createBinaryBackwardFunction(other, backThis, backOther, context, other.context(), contextMapper.apply(context(), other.context())));
-
+        if (requires_grad() || other.requires_grad()) {
+            gradValue.requires_grad_(true);
+        }
         return gradValue;
     }
 
@@ -220,12 +223,12 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
     @Override
     public V grad() {
         V grad = getGradNode().getValue().get();
-
         if (cachedGrad != null && grad != cachedGrad) {
             cachedGrad.swapWith(grad);
         } else {
             this.cachedGrad = grad;
         }
+
         return cachedGrad;
 
     }
@@ -240,6 +243,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         if (config == null) {
             throw new IllegalArgumentException("Config must not be null");
         }
+        this.create_graph = config.keep_graph();
         // topological order all of the children in the graph
         List<Node<?>> topo = new ArrayList<>();
         Set<Node<?>> visited = new HashSet<>();
@@ -262,6 +266,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         if (config == null) {
             throw new IllegalArgumentException("Config must not be null");
         }
+        this.create_graph = config.keep_graph();
         // topological order all of the children in the graph
         List<Node<?>> topo = new ArrayList<>();
         Set<Node<?>> visited = new HashSet<>();
@@ -278,7 +283,6 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
             value.backward(config);
         }
     }
-
 
     @Override
     public void backward(V g) {
