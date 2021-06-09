@@ -11,7 +11,7 @@ public class DemoFloatAutogradValueFactoryImpl implements DemoAutogradValueFacto
 	@Override
 	public DemoAutogradValue<Float> create(Supplier<Float> data,
 			DemoSize size) {
-		DemoFloatAutogradValueImpl value = new DemoFloatAutogradValueImpl(data, size);
+		DemoFloatAutogradValueImpl value = new DemoFloatAutogradValueImpl(data, size, false, false);
 		value.data_(data);
 		return value;
 	}

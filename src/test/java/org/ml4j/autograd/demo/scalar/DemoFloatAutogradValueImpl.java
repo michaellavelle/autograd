@@ -32,12 +32,12 @@ import org.ml4j.autograd.node.Node;
  */
 public class DemoFloatAutogradValueImpl extends AutogradValueImpl<DemoAutogradValue<Float>, Float, DemoSize> implements AutogradValue<DemoAutogradValue<Float>, Float, DemoSize>, DemoOperations<DemoAutogradValue<Float>>, DemoAutogradValue<Float> {
 	
-	public DemoFloatAutogradValueImpl(Supplier<Float> data, DemoSize size) {
-		this(data, size, new ArrayList<>());
+	public DemoFloatAutogradValueImpl(Supplier<Float> data, DemoSize size, boolean requires_grad, boolean create_graph) {
+		this(data, size, new ArrayList<>(), requires_grad, create_graph);
 	}
 	
-    protected DemoFloatAutogradValueImpl(Supplier<Float> data, DemoSize size, List<Node<?>> childen) {
-		super(data, size, childen);
+    protected DemoFloatAutogradValueImpl(Supplier<Float> data, DemoSize size, List<Node<?>> childen, boolean requires_grad, boolean create_graph) {
+		super(data, size, childen, requires_grad, create_graph);
 	}
 
 	@Override
@@ -126,8 +126,8 @@ public class DemoFloatAutogradValueImpl extends AutogradValueImpl<DemoAutogradVa
 	}
 
 	@Override
-	protected DemoAutogradValue<Float> createAutogradValue(Supplier<Float> data, DemoSize size, List<Node<?>> childen) {
-		return new DemoFloatAutogradValueImpl(data, size, childen);
+	protected DemoAutogradValue<Float> createAutogradValue(Supplier<Float> data, DemoSize size, List<Node<?>> childen, boolean requires_grad, boolean create_graph) {
+		return new DemoFloatAutogradValueImpl(data, size, childen, requires_grad, create_graph);
 	}
 
 	@Override

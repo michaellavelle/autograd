@@ -22,7 +22,7 @@ public class DemoFloatAutogradValueImplTest {
 
 	@Test
 	public void testValidConstruction() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, false, false);
 		Assertions.assertEquals(2.6f, autogradValue.data().get());
 		Assertions.assertArrayEquals(new float[] {2.6f } , autogradValue.getDataAsFloatArray(), 0.01f);
 		Assertions.assertNotNull(autogradValue.getGradNode());
@@ -53,12 +53,12 @@ public class DemoFloatAutogradValueImplTest {
 	
 	@Test
 	public void testConstructorWithNullSupplier_throwsIllegalArgumentException() {
-		Assertions.assertThrows(IllegalArgumentException.class, () -> new DemoFloatAutogradValueImpl(null, size));
+		Assertions.assertThrows(IllegalArgumentException.class, () -> new DemoFloatAutogradValueImpl(null, size, false, false));
 	}
 	
 	@Test
 	public void testRequiresGrad() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, false, false);
 		Assertions.assertFalse(autogradValue.requires_grad());
 	
 		autogradValue.requires_grad_(true);
@@ -73,7 +73,7 @@ public class DemoFloatAutogradValueImplTest {
 	
 	@Test
 	public void testName() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, false, false);
 		Assertions.assertNull(autogradValue.name());
 	
 		autogradValue.name_("a");
@@ -88,50 +88,50 @@ public class DemoFloatAutogradValueImplTest {
 	
 	@Test
 	public void testBackwardNoArgs() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
 		autogradValue.backward();
 	}
 	
 	@Test
 	public void testBackwardDefaultBackwardConfig() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
 		autogradValue.backward(new BackwardConfig());
 	}
 	
 	@Test
 	public void testBackwardNullBackwardConfig() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
 		Assertions.assertThrows(IllegalArgumentException.class, () -> autogradValue.backward((BackwardConfig) null));
 	}
 	
 	@Test
 	public void testBackwardDefaultBackwardConfigWithKeepGraphTrue() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
 		autogradValue.backward(new BackwardConfig().with_keep_graph(true));
 	}
 	
 	@Test
 	public void testBackwardDefaultBackwardConfigWithKeepGraphFalse() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
 		autogradValue.backward(new BackwardConfig().with_keep_graph(false));
 	}
 	
 	@Test
 	public void testBackwardDefaultBackwardConfigWithZeroGradTrue() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
 		autogradValue.backward(new BackwardConfig().with_zero_grad(true));
 	}
 	
 	@Test
 	public void testBackwardDefaultBackwardConfigWithZeroGradFalse() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
 		autogradValue.backward(new BackwardConfig().with_zero_grad(false));
 	}
 	
 	@Test
 	public void testAdd() {
-		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
-		DemoAutogradValue<Float> second = new DemoFloatAutogradValueImpl(() -> 3.6f, size);
+		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
+		DemoAutogradValue<Float> second = new DemoFloatAutogradValueImpl(() -> 3.6f, size, true, false);
 
 		DemoAutogradValue<Float> result = first.add(second);
 		
@@ -157,8 +157,8 @@ public class DemoFloatAutogradValueImplTest {
 	@Disabled
 	@Test
 	public void testAddWithBackward() {
-		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size).requires_grad_(true);
-		DemoAutogradValue<Float> second = new DemoFloatAutogradValueImpl(() -> 3.6f, size).requires_grad_(true);
+		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
+		DemoAutogradValue<Float> second = new DemoFloatAutogradValueImpl(() -> 3.6f, size, true, false);
 
 		DemoAutogradValue<Float> result = first.add(second);
 		
@@ -185,8 +185,8 @@ public class DemoFloatAutogradValueImplTest {
 	
 	@Test
 	public void testSetGradientDoesNotThrowIllegalStateException_WhenRequiresGradIsFalse_WhenGradNotAlreadySet() {
-		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
-		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size);
+		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size, false, false);
+		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size, false, false);
 
 		first.getGradNode().setValue(() -> grad);
 		
@@ -195,8 +195,8 @@ public class DemoFloatAutogradValueImplTest {
 	
 	@Test
 	public void testSetGradientDoesNotThrowIllegalStateException_WhenRequiresGradIsTrue_WhenGradNotAlreadySet() {
-		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size).requires_grad_(true);
-		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size);
+		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
+		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size, false, false);
 
 		first.getGradNode().setValue(() -> grad);
 	
@@ -207,8 +207,8 @@ public class DemoFloatAutogradValueImplTest {
 	
 	@Test
 	public void testSetGradientThrowsIllegalStateException_WhenRequiresGradIsFalse_WhenGradAlreadySet() {
-		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size);
-		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size);
+		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size, false, false);
+		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size, false, false);
 
 		first.getGradNode().setValue(() -> grad);
 		
@@ -217,8 +217,8 @@ public class DemoFloatAutogradValueImplTest {
 	
 	@Test
 	public void testSetGradientThrowsIllegalStateException_WhenRequiresGradIsTrue_WhenGradAlreadySet() {
-		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size).requires_grad_(true);
-		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size);
+		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
+		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size, false, false);
 
 		first.getGradNode().setValue(() -> grad);
 		

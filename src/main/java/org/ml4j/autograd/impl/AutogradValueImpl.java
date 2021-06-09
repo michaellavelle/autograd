@@ -57,7 +57,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
     private V cachedGrad;
     protected boolean create_graph;
 
-    protected AutogradValueImpl(Supplier<D> data, C context, List<Node<?>> children) {
+    protected AutogradValueImpl(Supplier<D> data, C context, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
         this.data = data;
         this.context = context;
         this.valueNode = new NodeImpl<>(() -> self(), children);
@@ -66,6 +66,8 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
             throw new IllegalArgumentException("Data supplier can not be null");
         }
         this.currentInstance = getInitialInstance();
+        this.requires_grad = requires_grad;
+        this.create_graph = create_graph;
     }
 
 
@@ -96,7 +98,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
     public V applyBinaryOperator(V other, BinaryOperator<D> forward, BiFunction<V, Pair<V, V>, V> backThis,
                                  BiFunction<V, Pair<V, V>, V> backOther, String op, BinaryOperator<C> contextMapper) {
         V gradValue = createAutogradValue(() -> forward.apply(data().get(), other.data().get()), contextMapper.apply(context(), other.context()),
-                Arrays.asList(getValueNode(), other.getValueNode()));
+                Arrays.asList(getValueNode(), other.getValueNode()), false, false);
 
         gradValue.getValueNode().setBackwardFunction(createBinaryBackwardFunction(other, backThis, backOther, context, other.context(), contextMapper.apply(context(), other.context())));
         if (requires_grad() || other.requires_grad()) {
@@ -135,18 +137,22 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
 
 
         UnaryOperator<V> backThisKeepGraph = g -> backThisAdaptedFinal.apply(g, new ImmutablePair<>(self(), other));
-        UnaryOperator<V> backThisNonKeepGraph = (g) -> backThisAdaptedFinal.apply(g, new ImmutablePair<>(createAutogradValue(this.data(), inputContext, new ArrayList<>()).self(), createAutogradValue(other.data(), otherContext, new ArrayList<>()).self()));
+        UnaryOperator<V> backThisNonKeepGraph = (g) -> backThisAdaptedFinal.apply(g, new ImmutablePair<>(createAutogradValue(this.data(), inputContext, new ArrayList<>(), false, false).self(), createAutogradValue(other.data(), otherContext, new ArrayList<>(), false, false).self()));
         UnaryOperator<V> backOtherKeepGraph = (g) -> backOtherAdaptedFinal.apply(g, new ImmutablePair<>(self(), other));
-        UnaryOperator<V> backOtherNonKeepGraph = g -> backOtherAdaptedFinal.apply(g, new ImmutablePair<>(createAutogradValue(this.data(), inputContext, new ArrayList<>()).self(), createAutogradValue(other.data(), otherContext, new ArrayList<>()).self()));
+        UnaryOperator<V> backOtherNonKeepGraph = g -> backOtherAdaptedFinal.apply(g, new ImmutablePair<>(createAutogradValue(this.data(), inputContext, new ArrayList<>(), false, false).self(), createAutogradValue(other.data(), otherContext, new ArrayList<>(), false, false).self()));
 
         Consumer<GradNode<V>> outBackwardKeepGraph = outGrad -> {
             addToGrad(backThisKeepGraph.apply(outGrad.getValue().get()));
-            other.getGradNode().add_(backOtherKeepGraph.apply(outGrad.getValue().get()), (f, s) -> f.add(s));
+            if (other.requires_grad()) {
+                other.getGradNode().add_(backOtherKeepGraph.apply(outGrad.getValue().get()), (f, s) -> f.add(s));
+            }
         };
 
         Consumer<V> outBackward = outGrad -> {
             addToGrad(backThisNonKeepGraph.apply(outGrad));
-            other.getGradNode().add_(backOtherNonKeepGraph.apply(outGrad), (f, s) -> f.add(s)); // here1
+            if (other.requires_grad()) {
+                other.getGradNode().add_(backOtherNonKeepGraph.apply(outGrad), (f, s) -> f.add(s)); // here1
+            }
         };
 
         final BiConsumer<GradNode<V>, Boolean> backwardFunction = (out1, keep_graph) -> {
@@ -155,7 +161,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
             } else {
                 if (out1 != null && out1.getValue() != null && out1.getValue().get() != null) {
                     // HERE
-                    outBackward.accept(this.createAutogradValue(out1.getValue().get().data(), outputContext, new ArrayList<>()).self()); //here2
+                    outBackward.accept(this.createAutogradValue(out1.getValue().get().data(), outputContext, new ArrayList<>(), false, false).self()); //here2
                 }
             }
         };
@@ -164,7 +170,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
 
     }
 
-    protected abstract V createAutogradValue(Supplier<D> data, C context, List<Node<?>> children);
+    protected abstract V createAutogradValue(Supplier<D> data, C context, List<Node<?>> children, boolean requires_grad, boolean create_graph);
 
     /**
      * Apply an inline binary operator to this AutogradValue.
@@ -191,7 +197,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
      * @return The resultant AutogradValue.
      */
     public V applyUnaryOperator(UnaryOperator<D> forward, BiFunction<V, V, V> backThis, String op, UnaryOperator<C> contextMapper) {
-        V autogradValue = createAutogradValue(() -> forward.apply(data().get()), contextMapper.apply(context()), Arrays.asList(getValueNode()));
+        V autogradValue = createAutogradValue(() -> forward.apply(data().get()), contextMapper.apply(context()), Arrays.asList(getValueNode()), requires_grad, create_graph);
         BiConsumer<V, BackwardConfig> backwardFunction = createUnaryBackwardFunction(backThis, context);
         autogradValue.getValueNode().setBackwardFunction(backwardFunction);
         return autogradValue;
@@ -248,10 +254,15 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         List<Node<?>> topo = new ArrayList<>();
         Set<Node<?>> visited = new HashSet<>();
         build_topo(topo, visited, getValueNode(), config);
+        if (!requires_grad()) {
+            throw new IllegalStateException("Cannot backprogate through node without requires_grad=true");
+        }
 
         // go one variable at a time and apply the chain rule to get its gradient
-        getGradNode().setValue(() -> createAutogradValue(() -> multiplicativeIdentity().get(), context, new ArrayList<>()).self());
-
+        getGradNode().setValue(() -> createAutogradValue(() -> multiplicativeIdentity().get(), context, new ArrayList<>(), false, config.keep_graph()).self());
+        if (!requires_grad()) {
+            throw new IllegalStateException("Cannot backprogate through node without requires_grad=true");
+        }
         //grad = keep_graph ? create(identity.get(), c, "one", false).self() : create(identity.get(), c, "one", false).self();
         List<Node<?>> reversed = new ArrayList<>();
         reversed.addAll(topo);
@@ -265,6 +276,9 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
     public void backward(V g, BackwardConfig config) {
         if (config == null) {
             throw new IllegalArgumentException("Config must not be null");
+        }
+        if (!requires_grad()) {
+            throw new IllegalStateException("Cannot backprogate through node without requires_grad=true");
         }
         this.create_graph = config.keep_graph();
         // topological order all of the children in the graph
@@ -291,7 +305,9 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         List<Node<?>> topo = new ArrayList<>();
         Set<Node<?>> visited = new HashSet<>();
         build_topo(topo, visited, getValueNode(), config);
-
+        if (!requires_grad()) {
+            throw new IllegalStateException("Cannot backprogate through node without requires_grad=true");
+        }
         // go one variable at a time and apply the chain rule to get its gradient
         getGradNode().setValue(() -> g);
 
@@ -322,10 +338,12 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
     }
 
     public void addToGrad(V other) {
-        if (getGradNode().getValue() == null) {
-            getGradNode().setValue(() -> createAutogradValue(() -> additiveIdentity().get(), context(), new ArrayList<>()));
+        if (this.requires_grad() || this.create_graph) {
+            if (getGradNode().getValue() == null) {
+                getGradNode().setValue(() -> createAutogradValue(() -> additiveIdentity().get(), context(), new ArrayList<>(), false, false));
+            }
+            getGradNode().add_(other, (f, s) -> f.add(s).self());
         }
-        getGradNode().add_(other, (f, s) -> f.add(s).self());
     }
 
 
@@ -340,7 +358,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         };
 
         UnaryOperator<V> backThisKeepGraph = (g) -> backThisAdapted.apply(g, self());
-        UnaryOperator<V> backThisNonKeepGraph = (g) -> backThisAdapted.apply(g, createAutogradValue(this.data(), inputContext, new ArrayList<>()).self());
+        UnaryOperator<V> backThisNonKeepGraph = (g) -> backThisAdapted.apply(g, createAutogradValue(this.data(), inputContext, new ArrayList<>(), false, false).self());
 
         Consumer<GradNode<V>> outBackwardKeepGraph = outGrad -> {
             addToGrad(backThisKeepGraph.apply(outGrad.getValue().get()));

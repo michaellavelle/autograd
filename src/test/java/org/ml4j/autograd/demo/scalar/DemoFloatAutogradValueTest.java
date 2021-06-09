@@ -22,12 +22,12 @@ public class DemoFloatAutogradValueTest extends DemoAutogradValueTestBase<Float>
 
 	@Override
 	protected DemoAutogradValue<Float> createGradValue(float value, boolean requires_grad) {
-        return new DemoFloatAutogradValueImpl(() -> value, size).requires_grad_(requires_grad);
+        return new DemoFloatAutogradValueImpl(() -> value, size, requires_grad, false);
 	}
 
 	@Override
 	protected DemoAutogradValue<Float> createGradValue(Float value, boolean requires_grad) {
-        return new DemoFloatAutogradValueImpl(() -> value, size).requires_grad_(requires_grad);
+        return new DemoFloatAutogradValueImpl(() -> value, size, requires_grad, false);
 	}
 
 	@Override
