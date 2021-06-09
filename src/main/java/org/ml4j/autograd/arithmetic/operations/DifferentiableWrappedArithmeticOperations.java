@@ -43,7 +43,6 @@ public interface DifferentiableWrappedArithmeticOperations<V extends ArithmeticO
     }
 
     default C getMappedContext(C f, C s) {
-        System.out.println("Default mapped:" + f);
         return f;
     }
 
