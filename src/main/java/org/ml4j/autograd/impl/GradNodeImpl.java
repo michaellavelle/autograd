@@ -40,13 +40,13 @@ public class GradNodeImpl<V extends AutogradValue<V, ?, ?>> extends NodeImpl<V> 
 
     @Override
     public GradNode<V> setValue(Supplier<V> value) {
-        if (this.value != null && this.value.get() != null) {
-            throw new IllegalStateException();
-        }
         if (this.prev == null) {
             this.prev = new ArrayList<>();
         }
         V val = value.get();
+        if (this.value != null && this.value.get() != null) {
+            throw new IllegalStateException();
+        }
         this.value = () -> val;
         return this;
     }

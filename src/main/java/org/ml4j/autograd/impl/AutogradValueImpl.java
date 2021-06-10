@@ -31,6 +31,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.BackwardConfig;
+import org.ml4j.autograd.CachingDataSupplierImpl;
 import org.ml4j.autograd.node.GradNode;
 import org.ml4j.autograd.node.Node;
 import org.ml4j.autograd.node.ValueNode;
@@ -58,7 +59,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
     protected boolean create_graph;
 
     protected AutogradValueImpl(Supplier<D> data, C context, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
-        this.data = data;
+        this.data = new CachingDataSupplierImpl<>(data);
         this.context = context;
         this.valueNode = new NodeImpl<>(() -> self(), children);
         this.gradNode = new GradNodeImpl<V>(() -> null, () -> Optional.empty());
@@ -69,7 +70,6 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         this.requires_grad = requires_grad;
         this.create_graph = create_graph;
     }
-
 
     @Override
     public V self() {
@@ -249,27 +249,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         if (config == null) {
             throw new IllegalArgumentException("Config must not be null");
         }
-        this.create_graph = config.keep_graph();
-        // topological order all of the children in the graph
-        List<Node<?>> topo = new ArrayList<>();
-        Set<Node<?>> visited = new HashSet<>();
-        build_topo(topo, visited, getValueNode(), config);
-        if (!requires_grad()) {
-            throw new IllegalStateException("Cannot backprogate through node without requires_grad=true");
-        }
-
-        // go one variable at a time and apply the chain rule to get its gradient
-        getGradNode().setValue(() -> createAutogradValue(() -> multiplicativeIdentity().get(), context, new ArrayList<>(), false, config.keep_graph()).self());
-        if (!requires_grad()) {
-            throw new IllegalStateException("Cannot backprogate through node without requires_grad=true");
-        }
-        //grad = keep_graph ? create(identity.get(), c, "one", false).self() : create(identity.get(), c, "one", false).self();
-        List<Node<?>> reversed = new ArrayList<>();
-        reversed.addAll(topo);
-        Collections.reverse(reversed);
-        for (Node<?> value : reversed) {
-            value.backward(config);
-        }
+        backward(createAutogradValue(() -> multiplicativeIdentity().get(), context, new ArrayList<>(), false, config.keep_graph()).self(), config);
     }
 
     @Override
@@ -300,24 +280,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
 
     @Override
     public void backward(V g) {
-        BackwardConfig config = new BackwardConfig();
-        // topological order all of the children in the graph
-        List<Node<?>> topo = new ArrayList<>();
-        Set<Node<?>> visited = new HashSet<>();
-        build_topo(topo, visited, getValueNode(), config);
-        if (!requires_grad()) {
-            throw new IllegalStateException("Cannot backprogate through node without requires_grad=true");
-        }
-        // go one variable at a time and apply the chain rule to get its gradient
-        getGradNode().setValue(() -> g);
-
-        //grad = keep_graph ? create(identity.get(), c, "one", false).self() : create(identity.get(), c, "one", false).self();
-        List<Node<?>> reversed = new ArrayList<>();
-        reversed.addAll(topo);
-        Collections.reverse(reversed);
-        for (Node<?> value : reversed) {
-            value.backward(config);
-        }
+        backward(g, new BackwardConfig());
     }
 
     protected abstract Supplier<D> multiplicativeIdentity();
@@ -418,7 +381,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
 
     @Override
     public V data_(Supplier<D> data) {
-        this.data = data;
+        this.data = new CachingDataSupplierImpl<>(data);
         return self();
     }
 

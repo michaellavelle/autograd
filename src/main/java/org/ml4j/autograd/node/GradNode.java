@@ -15,6 +15,7 @@
 package org.ml4j.autograd.node;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * Represents the Node in the computation graph for the gradient of an AutogradValue.
@@ -45,5 +46,7 @@ public interface GradNode<V> extends AccumulatorNode<V, GradNode<V>> {
      * @param disableNativeGradient Whether to disable native gradient calculation.
      */
     void setDisableNativeGradient(boolean disableNativeGradient);
+
+    void setNativeGradientSupplier(Supplier<Optional<V>> nativeGradientSupplier);
 
 }
