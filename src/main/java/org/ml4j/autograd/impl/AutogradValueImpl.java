@@ -181,7 +181,8 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
      * @return This AutogradValue.
      */
     public V applyInlineBinaryOperator(V other, BinaryOperator<D> forward, String op) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        data_(() -> forward.apply(data().get(), other.data().get()));
+        return self();
     }
 
     /**
