@@ -15,9 +15,10 @@
 package org.ml4j.autograd.demo;
 
 import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.Value;
 import org.ml4j.autograd.arithmetic.operations.DifferentiableWrappedArithmeticOperations;
 
-public interface DifferentiableWrappedDemoOperations<V extends DemoOperations<V>, D extends DemoOperations<D>, C> extends DifferentiableWrappedArithmeticOperations<V, D, C>, AutogradValue<V, D, C>, DemoOperations<V> {
+public interface DifferentiableWrappedDemoOperations<V extends DemoOperations<V> & Value<V, D, C>, D extends DemoOperations<D>, C> extends DifferentiableWrappedArithmeticOperations<V, D, C>, AutogradValue<V, D, C>, DemoOperations<V> {
 
 	@Override
 	default V relu() {

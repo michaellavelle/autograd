@@ -100,7 +100,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         V gradValue = createAutogradValue(() -> forward.apply(data().get(), other.data().get()), contextMapper.apply(context(), other.context()),
                 Arrays.asList(getValueNode(), other.getValueNode()), false, false);
 
-        gradValue.getValueNode().setBackwardFunction(createBinaryBackwardFunction(other, backThis, backOther, context, other.context(), contextMapper.apply(context(), other.context())));
+        gradValue.getValueNode().setBackwardFunction(createBinaryBackwardFunction(other, backThis, backOther, context, other.context(), contextMapper.apply(context(), other.context()), op));
         if (requires_grad() || other.requires_grad()) {
             gradValue.requires_grad_(true);
         }
@@ -108,7 +108,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
     }
 
     private BiConsumer<V, BackwardConfig> createBinaryBackwardFunction(V other, BiFunction<V, Pair<V, V>, V> backThis,
-                                                                       BiFunction<V, Pair<V, V>, V> backOther, C inputContext, C otherContext, C outputContext) {
+                                                                       BiFunction<V, Pair<V, V>, V> backOther, C inputContext, C otherContext, C outputContext, String op) {
 
         BiFunction<V, Pair<V, V>, V> backThisAdapted = (g, p) -> backThis.apply(g, p);
 
@@ -181,7 +181,8 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
      * @return This AutogradValue.
      */
     public V applyInlineBinaryOperator(V other, BinaryOperator<D> forward, String op) {
-        data_(() -> forward.apply(data().get(), other.data().get()));
+        D result = forward.apply(data().get(), other.data().get());
+        data_(() -> result);
         return self();
     }
 
@@ -201,6 +202,9 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         V autogradValue = createAutogradValue(() -> forward.apply(data().get()), contextMapper.apply(context()), Arrays.asList(getValueNode()), requires_grad, create_graph);
         BiConsumer<V, BackwardConfig> backwardFunction = createUnaryBackwardFunction(backThis, context);
         autogradValue.getValueNode().setBackwardFunction(backwardFunction);
+        if (requires_grad()) {
+            autogradValue.requires_grad_(true);
+        }
         return autogradValue;
     }
 
@@ -382,7 +386,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
 
     @Override
     public V data_(Supplier<D> data) {
-        this.data = new CachingDataSupplierImpl<>(data);
+        this.data = data;
         return self();
     }
 
