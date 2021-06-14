@@ -19,13 +19,14 @@ import java.util.function.BinaryOperator;
 import java.util.function.UnaryOperator;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.Value;
 
 /**
  * Wraps an ArithmeticOperations instance with differentiation.
  * 
  * @author Michael Lavelle
  */
-public interface DifferentiableWrappedArithmeticOperations<V extends ArithmeticOperations<V>, D extends ArithmeticOperations<D>, C> extends AutogradValue<V, D, C>, ArithmeticOperations<V> {
+public interface DifferentiableWrappedArithmeticOperations<V extends ArithmeticOperations<V> & Value<V, D, C>, D extends ArithmeticOperations<D>, C> extends AutogradValue<V, D, C>, ArithmeticOperations<V> {
 
     @Override
     default float[] getDataAsFloatArray() {
@@ -34,7 +35,7 @@ public interface DifferentiableWrappedArithmeticOperations<V extends ArithmeticO
  
     @Override
     default V add(V other) {
-        return applyBinaryOperator(other, D::add, (g, p) -> g, (g, p) -> g, "add", (f, s) -> getMappedContext(f, s));
+        return applyBinaryOperator(other, D::add, (g, p) -> g, (g, p) -> g, "add:" + this.context() + ":" + other.context(), (f, s) -> getMappedContext(f, s));
     }
    
     @Override
