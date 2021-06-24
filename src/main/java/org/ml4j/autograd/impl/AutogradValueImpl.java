@@ -233,7 +233,9 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
 
     @Override
     public V grad() {
-        V grad = getGradNode().getValue().get();
+
+        Optional<V> nativeGradient = getGradNode().isDisableNativeGradient() ? Optional.empty() : getGradNode().native_grad();
+        V grad = nativeGradient.isPresent() && nativeGradient.get().data().get() != null ? nativeGradient.get() : getGradNode().getValue().get();
         if (cachedGrad != null && grad != cachedGrad) {
             cachedGrad.swapWith(grad);
         } else {
