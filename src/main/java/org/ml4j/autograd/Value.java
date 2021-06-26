@@ -69,4 +69,6 @@ public interface Value<V, D, C> extends DataSupplier<D> {
      */
     C context();
 
+    boolean create_graph();
+
 }

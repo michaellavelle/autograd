@@ -21,15 +21,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
+import java.util.function.*;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.AutogradValueCreator;
 import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.CachingDataSupplierImpl;
 import org.ml4j.autograd.node.GradNode;
@@ -57,6 +54,62 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
     private String name;
     private V cachedGrad;
     protected boolean create_graph;
+
+    public <X extends AutogradValue<X, Y, Z>, Y, Z> AutogradValueImpl(AutogradValue<X, Y, Z> other, Function<Y, D> dataMapper, Function<Z, C> contextMapper, Function<X, V> valueMapper, Function<V, X> valueReverseMapper, Supplier<Optional<V>> nativeGradientSupplier) {
+        D otherDat = dataMapper.apply(other.data().get());
+        this.data = () -> otherDat;
+        this.context = contextMapper.apply(other.context());
+        this.valueNode = new NodeImpl<>(() -> self(), other.getValueNode().prev());
+        if (((NodeImpl<X>)other.getValueNode()).getBackwardFunction() != null){
+            valueNode.setBackwardFunction((v, c) -> {
+                ((NodeImpl<X>) other.getValueNode()).getBackwardFunction().accept(valueReverseMapper.apply(v), c);
+            });
+        }
+        GradNodeImpl<V> g = new GradNodeImpl<V>(() -> null, nativeGradientSupplier);
+        g.prev = other.getGradNode().prev();
+        if (((GradNodeImpl<X>)other.getGradNode()).getBackwardFunction() != null) {
+            g.setBackwardFunction((v, c) -> ((GradNodeImpl<X>)other.getGradNode()).getBackwardFunction().accept(valueReverseMapper.apply(v), c));
+        }
+        this.gradNode = g;
+        if (data == null) {
+            throw new IllegalArgumentException("Data supplier can not be null");
+        }
+        this.currentInstance = getInitialInstance();
+        this.requires_grad = other.requires_grad();
+        this.create_graph = other.create_graph();
+
+        /*
+        this.data = () -> dataMapper.apply(other.data().get());
+        this.context = contextMapper.apply(other.context());
+        this.currentInstance = getInitialInstance();
+        GradNodeImpl<V> g = new GradNodeImpl<>(() -> valueMapper.apply(other.getGradNode().getValue().get()), nativeGradientSupplier);
+        g.setBackwardFunction((v, c) -> ((GradNodeImpl<X>)other.getGradNode()).getBackwardFunction().accept(valueReverseMapper.apply(v), c));
+        g.prev = other.getGradNode().prev();
+        this.gradNode = g;
+        this.gradNode.setDisableNativeGradient(other.getGradNode().isDisableNativeGradient());
+        this.valueNode = new NodeImpl<>(other.getValueNode(), valueMapper, valueReverseMapper);
+        valueNode.setBackwardFunction((v, c) -> ((NodeImpl<X>)other.getValueNode()).getBackwardFunction().accept(valueReverseMapper.apply(v), c));
+        this.requires_grad = other.requires_grad();
+        this.name = other.name();
+        this.create_graph = other.create_graph();
+
+         */
+
+    }
+
+    public boolean create_graph() {
+        return create_graph;
+    }
+
+    protected AutogradValueImpl(V other) {
+        this.data = other.data();
+        this.context = other.context();
+        this.valueNode = other.getValueNode();
+        this.gradNode = other.getGradNode();;
+        this.currentInstance = getInitialInstance();
+        this.requires_grad = other.requires_grad();
+        this.create_graph = other.create_graph();
+    }
 
     protected AutogradValueImpl(Supplier<D> data, C context, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
         this.data = new CachingDataSupplierImpl<>(data);
@@ -106,6 +159,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         }
         return gradValue;
     }
+
 
     private BiConsumer<V, BackwardConfig> createBinaryBackwardFunction(V other, BiFunction<V, Pair<V, V>, V> backThis,
                                                                        BiFunction<V, Pair<V, V>, V> backOther, C inputContext, C otherContext, C outputContext, String op) {
@@ -207,7 +261,6 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         }
         return autogradValue;
     }
-
 
     /**
      * Apply an inline unary operator to this AutogradValue.
@@ -394,12 +447,12 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
 
     @Override
     public V apply(DifferentiableUnaryOperator<V, D, C> op) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return applyUnaryOperator(f -> op.getForward().apply(f), (g, v) -> op.getBackwardThis().apply(g, v), "n/a", i -> op.getContextMapper().apply(i));
     }
 
     @Override
     public V apply(DifferentiableBinaryOperator<V, D, C> op, V other) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return applyBinaryOperator(other, (f, s) -> op.getForward().apply(f, s), (g, v) -> op.getBackwardThis().apply(g, v), (g, v) -> op.getBackwardOther().apply(g, v), "n/a", (i, j) -> op.getContextMapper().apply(i, j));
     }
 
     @Override

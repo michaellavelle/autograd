@@ -36,4 +36,5 @@ public interface ValueNode<V> extends Node<V> {
      */
     void setBackwardFunction(BiConsumer<V, BackwardConfig> backwardFunction);
 
+    BiConsumer<V, BackwardConfig> getBackwardFunction();
 }

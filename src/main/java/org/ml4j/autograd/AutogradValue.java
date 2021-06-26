@@ -19,6 +19,8 @@ import org.ml4j.autograd.node.ValueNode;
 import org.ml4j.autograd.operators.DifferentiableBinaryOperator;
 import org.ml4j.autograd.operators.DifferentiableUnaryOperator;
 
+import java.util.function.Function;
+
 /**
  * Represents an AutogradValue of type V, with a Pytorch-like API.
  *

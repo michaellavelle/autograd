@@ -46,6 +46,7 @@ public class NodeImpl<V extends AutogradValue<V, ?, ?>> implements ValueNode<V> 
         this.prev = children;
     }
 
+    /*
     @Override
     public String toString() {
         if (prev != null && prev.size() > 0) {
@@ -54,6 +55,7 @@ public class NodeImpl<V extends AutogradValue<V, ?, ?>> implements ValueNode<V> 
             return "NodeImpl [" + hashCode() + ":" + value.get().data().get() + "]";
         }
     }
+     */
 
     @Override
     public Supplier<V> getValue() {
@@ -75,5 +77,10 @@ public class NodeImpl<V extends AutogradValue<V, ?, ?>> implements ValueNode<V> 
     @Override
     public void setBackwardFunction(BiConsumer<V, BackwardConfig> wrapBackward) {
         this.wrapBackward = wrapBackward;
+    }
+
+    @Override
+    public BiConsumer<V, BackwardConfig> getBackwardFunction() {
+        return wrapBackward;
     }
 }
