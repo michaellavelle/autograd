@@ -16,9 +16,11 @@ package org.ml4j.autograd.impl;
 
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.node.GradNode;
 
 /**
@@ -52,7 +54,7 @@ public class GradNodeImpl<V extends AutogradValue<V, ?, ?>> extends NodeImpl<V> 
     }
 
     @Override
-    public GradNode<V> add_(V value, BinaryOperator<V> addFunction) {
+    public synchronized GradNode<V> add_(V value, BinaryOperator<V> addFunction) {
         if (this.prev == null) {
             this.prev = new ArrayList<>();
         }
