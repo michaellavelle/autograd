@@ -55,7 +55,6 @@ public class GradNodeImpl<V extends AutogradValue<V, ?, ?>> extends NodeImpl<V> 
 
     @Override
     public synchronized GradNode<V> add_(V value, BinaryOperator<V> addFunction) {
-        System.out.println(this.hashCode());
         if (this.prev == null) {
             this.prev = new ArrayList<>();
         }
