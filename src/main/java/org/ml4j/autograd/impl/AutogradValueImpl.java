@@ -25,10 +25,7 @@ import java.util.function.*;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.ml4j.autograd.AutogradValue;
-import org.ml4j.autograd.AutogradValueCreator;
-import org.ml4j.autograd.BackwardConfig;
-import org.ml4j.autograd.CachingDataSupplierImpl;
+import org.ml4j.autograd.*;
 import org.ml4j.autograd.node.GradNode;
 import org.ml4j.autograd.node.Node;
 import org.ml4j.autograd.node.ValueNode;
@@ -49,7 +46,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
     private GradNode<V> gradNode;
     private ValueNode<V> valueNode;
     protected C context;
-    private Supplier<D> data;
+    private CachingDataSupplier<D> data;
     private boolean requires_grad;
     private String name;
     private V cachedGrad;
@@ -57,7 +54,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
 
     public <X extends AutogradValue<X, Y, Z>, Y, Z> AutogradValueImpl(AutogradValue<X, Y, Z> other, Function<Y, D> dataMapper, Function<Z, C> contextMapper, Function<X, V> valueMapper, Function<V, X> valueReverseMapper, Supplier<Optional<V>> nativeGradientSupplier) {
         D otherDat = dataMapper.apply(other.data().get());
-        this.data = () -> otherDat;
+        this.data = new CachingDataSupplierImpl<>(() -> otherDat);
         this.context = contextMapper.apply(other.context());
         this.valueNode = new NodeImpl<>(() -> self(), other.getValueNode().prev());
         if (((NodeImpl<X>)other.getValueNode()).getBackwardFunction() != null){
@@ -234,7 +231,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
      */
     public V applyInlineBinaryOperator(V other, BinaryOperator<D> forward, String op) {
         D result = forward.apply(data().get(), other.data().get());
-        data_(new CachingDataSupplierImpl<>(() -> result));
+        data_(() -> result);
         return self();
     }
 
@@ -271,7 +268,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
     }
 
     @Override
-    public Supplier<D> data() {
+    public CachingDataSupplier<D> data() {
         return data;
     }
 
@@ -438,7 +435,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
 
     @Override
     public V data_(Supplier<D> data) {
-        this.data = data;
+        this.data = new CachingDataSupplierImpl<>(data);
         return self();
     }
 
