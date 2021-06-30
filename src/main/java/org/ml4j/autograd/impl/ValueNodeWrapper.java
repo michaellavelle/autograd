@@ -46,4 +46,34 @@ public class ValueNodeWrapper<S, T> implements ValueNode<T> {
     public List<Node<?>> prev() {
         return valueNode.prev();
     }
+
+    @Override
+    public List<Node<?>> next() {
+        return valueNode.next();
+    }
+
+    @Override
+    public void close() {
+        valueNode.close();
+    }
+
+    @Override
+    public boolean isClosed() {
+        return valueNode.isClosed();
+    }
+
+    @Override
+    public boolean isClosing() {
+        return valueNode.isClosing();
+    }
+
+    @Override
+    public void setClosing(boolean closing) {
+        valueNode.setClosing(closing);
+    }
+
+    @Override
+    public void setClosed(boolean closed) {
+        valueNode.setClosed(closed);
+    }
 }

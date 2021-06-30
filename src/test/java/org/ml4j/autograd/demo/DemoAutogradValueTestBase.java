@@ -14,12 +14,19 @@
 
 package org.ml4j.autograd.demo;
 
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.BackwardConfig;
+import org.ml4j.autograd.impl.AutogradValueImpl;
+import org.ml4j.autograd.node.Node;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A test for our DemoAutogradValue.
@@ -35,6 +42,7 @@ public abstract class DemoAutogradValueTestBase<D> {
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        this.registry = new ArrayList<>();
     }
 
     protected abstract DemoAutogradValue<D> createGradValue(float value, boolean requires_grad);
@@ -44,8 +52,39 @@ public abstract class DemoAutogradValueTestBase<D> {
     
     protected abstract D createData(float value);
 
-    
+    protected List<AutogradValue<?, ?, ?>> registry;
+
+
+
     @Test
+    public void test_close() {
+
+        var a = createGradValue(-4f, true).name_("a");
+
+        var b = createGradValue(2.0f, true).name_("b");
+
+        var c = a.add(b).name_("c");
+
+        c.backward();
+
+        System.out.println(a.grad().getDataAsFloatArray()[0]);
+        System.out.println(b.grad().getDataAsFloatArray()[0]);
+
+        System.out.println(a.getDataAsFloatArray()[0]);
+        System.out.println(b.getDataAsFloatArray()[0]);
+
+
+        System.out.println(a.isClosed());
+        System.out.println(b.isClosed());
+        System.out.println(c.isClosed());
+
+        for (AutogradValue<?, ?, ?> value : registry) {
+            System.out.println("Status:" + value);
+        }
+
+    }
+
+        @Test
     public void test_example() {
 
         var a = createGradValue(-4f, true).name_("a");
@@ -79,7 +118,20 @@ public abstract class DemoAutogradValueTestBase<D> {
         assertEquals(createData(138.83f), a.grad().data().get());
 
         assertEquals(createData(645.58f), b.grad().data().get());
-    }
+
+        c.grad();
+        d.grad();
+        e.grad();
+        f.grad();
+        g.grad();
+
+            for (AutogradValue<?, ?, ?> value : registry) {
+                if (!value.isClosed()) {
+                    System.out.println("Status:" + value);
+                }
+            }
+
+        }
     
     protected abstract void assertEquals(D value1, D value2);
     
@@ -100,8 +152,8 @@ public abstract class DemoAutogradValueTestBase<D> {
 
         z.backward(new BackwardConfig().with_keep_graph(true));
 
-        var xGradAfterFirstBackward = x.grad();
-        var yGradAfterFirstBackward = y.grad();
+        var xGradAfterFirstBackward = x.grad(false);
+        var yGradAfterFirstBackward = y.grad(false);
 
         assertEquals(createData(1.6f), xGradAfterFirstBackward.data().get());
 
@@ -129,6 +181,12 @@ public abstract class DemoAutogradValueTestBase<D> {
 
         Assertions.assertArrayEquals(x.grad().getDataAsFloatArray(), x_grad.add(createGradValue(x_hv, false)).getDataAsFloatArray(), 0.001f);
         Assertions.assertArrayEquals(y.grad().getDataAsFloatArray(), y_grad.add(createGradValue(y_hv, false)).getDataAsFloatArray(), 0.001f);
+
+        for (AutogradValue<?, ?, ?> value : registry) {
+            if (!value.isClosed()) {
+                System.out.println("Status:" + value);
+            }
+        }
     }
 
     private DemoAutogradValue<D> one() {

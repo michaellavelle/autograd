@@ -14,6 +14,8 @@
 
 package org.ml4j.autograd.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.BiConsumer;

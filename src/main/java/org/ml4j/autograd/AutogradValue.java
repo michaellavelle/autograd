@@ -14,6 +14,7 @@
 
 package org.ml4j.autograd;
 
+import org.ml4j.autograd.impl.AutogradValueProperties;
 import org.ml4j.autograd.node.GradNode;
 import org.ml4j.autograd.node.ValueNode;
 import org.ml4j.autograd.operators.DifferentiableBinaryOperator;
@@ -70,6 +71,19 @@ public interface AutogradValue<V, D, C> extends Value<V, D, C>, Accumulatable<V>
     V grad();
 
     /**
+     * Obtains the gradient of this AutogradValue (after backpropagation has been performed), or null otherwise.
+     *
+     * @return The gradient, or null if no gradient.
+     */
+    V grad(boolean close);
+
+    boolean isClosed();
+
+    boolean isClosing();
+
+    void setClosed(boolean closed);
+
+    /**
      * Backpropagate the gradient of this AutogradValue back to previous nodes in the back propagation chain,
      * with the default BackwardConfig ( false, false).
      */
@@ -116,5 +130,10 @@ public interface AutogradValue<V, D, C> extends Value<V, D, C>, Accumulatable<V>
      * @param other The other AutogradValue.
      */
     void swapWith(V other);
+
+
+    void close();
+
+    AutogradValueProperties<C> properties();
 
 }

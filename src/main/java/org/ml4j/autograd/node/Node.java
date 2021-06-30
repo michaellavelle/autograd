@@ -51,4 +51,18 @@ public interface Node<V> {
     List<Node<?>> prev();
 
 
+    List<Node<?>> next();
+
+
+    void close();
+
+    boolean isClosed();
+
+    boolean isClosing();
+
+    void setClosing(boolean closing);
+
+    void setClosed(boolean closed);
+
+
 }

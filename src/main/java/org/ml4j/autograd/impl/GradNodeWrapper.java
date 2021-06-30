@@ -40,6 +40,36 @@ public class GradNodeWrapper<S, T> implements GradNode<T> {
     }
 
     @Override
+    public List<Node<?>> next() {
+        return gradNode.next();
+    }
+
+    @Override
+    public void close() {
+        gradNode.close();
+    }
+
+    @Override
+    public boolean isClosed() {
+        return gradNode.isClosed();
+    }
+
+    @Override
+    public boolean isClosing() {
+        return gradNode.isClosing();
+    }
+
+    @Override
+    public void setClosing(boolean closing) {
+        gradNode.setClosing(closing);
+    }
+
+    @Override
+    public void setClosed(boolean closed) {
+        gradNode.setClosed(closed);
+    }
+
+    @Override
     public Optional<T> native_grad() {
         Optional<S> grad = gradNode.native_grad();
         if (grad.isPresent()) {

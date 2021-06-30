@@ -23,6 +23,7 @@ import org.ml4j.autograd.demo.DemoAutogradValue;
 import org.ml4j.autograd.demo.DemoSize;
 import org.ml4j.autograd.demo.DifferentiableWrappedDemoOperations;
 import org.ml4j.autograd.impl.AutogradValueImpl;
+import org.ml4j.autograd.impl.AutogradValueProperties;
 import org.ml4j.autograd.node.Node;
 
 /**
@@ -34,16 +35,17 @@ import org.ml4j.autograd.node.Node;
  */
 public class DemoFloatOperationsAutogradValueImpl extends AutogradValueImpl<DemoAutogradValue<DemoFloatOperations>, DemoFloatOperations, DemoSize> implements AutogradValue<DemoAutogradValue<DemoFloatOperations>, DemoFloatOperations, DemoSize>, DifferentiableWrappedDemoOperations<DemoAutogradValue<DemoFloatOperations>, DemoFloatOperations, DemoSize>, DemoAutogradValue<DemoFloatOperations> {
 	
-	public DemoFloatOperationsAutogradValueImpl(Supplier<DemoFloatOperations> data, DemoSize size, boolean requires_grad, boolean create_graph) {
-		this(data, size, new ArrayList<>(), requires_grad, create_graph);
+	public DemoFloatOperationsAutogradValueImpl(AutogradValueProperties<DemoSize> properties, Supplier<DemoFloatOperations> data) {
+		super(properties, data);
 	}
 	
-	public DemoFloatOperationsAutogradValueImpl(float data, DemoSize size, boolean requires_grad, boolean create_graph) {
-		this(() -> new DemoFloatOperations(data, size), size, new ArrayList<>(), requires_grad, create_graph);
+	public DemoFloatOperationsAutogradValueImpl(AutogradValueProperties<DemoSize> properties, float data) {
+		this(properties, () -> new DemoFloatOperations(data, properties.getContext()));
 	}
-	
-	protected DemoFloatOperationsAutogradValueImpl(Supplier<DemoFloatOperations> data, DemoSize size, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
-		super(data, size, children, requires_grad, create_graph);
+
+	@Override
+	protected void close(DemoFloatOperations data) {
+		data.setValue(-1);
 	}
 
 	@Override
@@ -52,8 +54,8 @@ public class DemoFloatOperationsAutogradValueImpl extends AutogradValueImpl<Demo
 	}
 
 	@Override
-	protected DemoAutogradValue<DemoFloatOperations> createAutogradValue(Supplier<DemoFloatOperations> data, DemoSize size, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
-		return new DemoFloatOperationsAutogradValueImpl(data, size, children, requires_grad, create_graph);
+	protected DemoAutogradValue<DemoFloatOperations> createAutogradValue(Supplier<DemoFloatOperations> data, AutogradValueProperties<DemoSize> properties) {
+		return new DemoFloatOperationsAutogradValueImpl(properties, data);
 	}
 
 	@Override
