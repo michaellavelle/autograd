@@ -67,32 +67,41 @@ public class DefaultAutogradValueRegistry implements AutogradValueRegistry, Iter
     }
 
     public void statusLocal(boolean print) {
-        int not = 0;
+        int notYetClosed = 0;
+        int uncloseable = 0;
+
         for (AutogradValue<?, ?, ?> b : registry) {
-            if (!b.isClosed()) {
+            if (!b.isClosed() && !b.properties().isUncloseable()) {
                 if (print) {
-                    System.out.println(name + ":" + "Not closed:" + b.name() + ":" + b.requires_grad());
+                    System.out.println(name + ":" + "Not yet closed:" + b.name() + ":" + b.requires_grad());
                 }
-                not++;
+                notYetClosed++;
+            } else if (!b.isClosed() && b.properties().isUncloseable()) {
+                System.out.println(name + ":" + "Uncloseable:" + b.name() + ":" + b.requires_grad());
+                uncloseable++;
             }
         }
         if (print) {
-            System.out.println(name + ":" + "Not closed total:" + not);
+            System.out.println(name + ":" + "Not yet closed total:" + notYetClosed);
+        }
+        if (print) {
+            System.out.println(name + ":" + "Unclosable total:" + uncloseable);
         }
     }
 
     public void clearLocal() {
-        for (AutogradValue<?, ?, ?> b : registry) {
-            if (!b.isClosed()) {
-                throw new IllegalStateException("Autograd value not closed");
+        List<AutogradValue<?, ?, ?>> toClose = new ArrayList<>();
+        for (AutogradValue<?, ?, ?> value : registry) {
+            if (value.isClosed() && !value.properties().isUncloseable()) {
+                toClose.add(value);
             }
         }
-        registry = new ArrayList<>();
+        registry.removeAll(toClose);
     }
 
     public void closeLocal() {
         for (AutogradValue<?, ?, ?> b : registry) {
-            if (!b.isClosed()) {
+            if (!b.isClosed() && !b.properties().isUncloseable()) {
                 b.close();
             }
         }
