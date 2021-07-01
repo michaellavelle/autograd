@@ -14,9 +14,10 @@
 
 package org.ml4j.autograd.node;
 
+import org.ml4j.autograd.BackwardConfig;
+
 import java.util.List;
 import java.util.function.Supplier;
-import org.ml4j.autograd.BackwardConfig;
 
 
 /**
@@ -49,6 +50,19 @@ public interface Node<V> {
      *     by the backward method to chain backpropagation to previous nodes in the computation graph.
      */
     List<Node<?>> prev();
+
+
+    List<Node<?>> next();
+
+    void close();
+
+    boolean isClosed();
+
+    boolean isClosing();
+
+    void setClosing(boolean closing);
+
+    void setClosed(boolean closed);
 
 
 }

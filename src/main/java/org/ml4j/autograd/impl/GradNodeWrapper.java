@@ -3,11 +3,9 @@ package org.ml4j.autograd.impl;
 import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.node.GradNode;
 import org.ml4j.autograd.node.Node;
-import org.ml4j.autograd.node.ValueNode;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -37,6 +35,36 @@ public class GradNodeWrapper<S, T> implements GradNode<T> {
     @Override
     public List<Node<?>> prev() {
         return gradNode.prev();
+    }
+
+    @Override
+    public List<Node<?>> next() {
+        return gradNode.next();
+    }
+
+    @Override
+    public void close() {
+        gradNode.close();
+    }
+
+    @Override
+    public boolean isClosed() {
+        return gradNode.isClosed();
+    }
+
+    @Override
+    public boolean isClosing() {
+        return gradNode.isClosing();
+    }
+
+    @Override
+    public void setClosing(boolean closing) {
+        gradNode.setClosing(closing);
+    }
+
+    @Override
+    public void setClosed(boolean closed) {
+        gradNode.setClosed(closed);
     }
 
     @Override

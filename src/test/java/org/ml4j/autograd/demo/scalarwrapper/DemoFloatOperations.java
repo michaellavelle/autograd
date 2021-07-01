@@ -30,6 +30,10 @@ public class DemoFloatOperations implements DemoOperations<DemoFloatOperations> 
 	public float getValue() {
 		return value;
 	}
+
+	public void setValue(float value) {
+		this.value = value;
+	}
 	
 	protected DemoFloatOperations create(float value) {
 		return new DemoFloatOperations(value, size);

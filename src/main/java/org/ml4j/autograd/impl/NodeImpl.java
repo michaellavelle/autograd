@@ -14,14 +14,15 @@
 
 package org.ml4j.autograd.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Supplier;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.node.Node;
 import org.ml4j.autograd.node.ValueNode;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 /**
  * Default implementation of Node.
@@ -34,16 +35,22 @@ public class NodeImpl<V extends AutogradValue<V, ?, ?>> implements ValueNode<V> 
 
     protected Supplier<V> value;
     protected List<Node<?>> prev;
+    protected List<Node<?>> next;
+    protected boolean closed;
+    protected boolean closing;
+
     protected BiConsumer<V, BackwardConfig> wrapBackward;
 
     public NodeImpl(Supplier<V> value) {
         this.value = value;
         this.prev = new ArrayList<>();
+        this.next = new ArrayList<>();
     }
 
-    public NodeImpl(Supplier<V> value, List<Node<?>> children) {
+    public NodeImpl(Supplier<V> value, List<Node<?>> children, List<Node<?>> next) {
         this.value = value;
         this.prev = children;
+        this.next = next;
     }
 
     /*
@@ -72,6 +79,43 @@ public class NodeImpl<V extends AutogradValue<V, ?, ?>> implements ValueNode<V> 
     @Override
     public List<Node<?>> prev() {
         return prev;
+    }
+
+    @Override
+    public List<Node<?>> next() {
+        return next;
+    }
+
+    @Override
+    public void close() {
+        this.closed = true;
+    }
+
+    public boolean isClosed() {
+        return closed;
+    }
+
+    public boolean isClosing() {
+        return closing;
+    }
+
+    @Override
+    public String toString() {
+        if (value != null && value.get() != null) {
+            return value.get().toString();
+        } else {
+            return super.toString();
+        }
+    }
+
+    @Override
+    public void setClosing(boolean closing) {
+        this.closing = closing;
+    }
+
+    @Override
+    public void setClosed(boolean closed) {
+        this.closed = closed;
     }
 
     @Override

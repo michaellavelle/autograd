@@ -14,16 +14,14 @@
 
 package org.ml4j.autograd.demo.scalar;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Supplier;
-
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.demo.DemoAutogradValue;
 import org.ml4j.autograd.demo.DemoOperations;
 import org.ml4j.autograd.demo.DemoSize;
 import org.ml4j.autograd.impl.AutogradValueImpl;
-import org.ml4j.autograd.node.Node;
+import org.ml4j.autograd.impl.AutogradValueProperties;
+
+import java.util.function.Supplier;
 
 /**
  * An AutogradValue implementation that supports the operations defined bt DemoOperations.
@@ -31,13 +29,14 @@ import org.ml4j.autograd.node.Node;
  * @author Michael Lavelle
  */
 public class DemoFloatAutogradValueImpl extends AutogradValueImpl<DemoAutogradValue<Float>, Float, DemoSize> implements AutogradValue<DemoAutogradValue<Float>, Float, DemoSize>, DemoOperations<DemoAutogradValue<Float>>, DemoAutogradValue<Float> {
-	
-	public DemoFloatAutogradValueImpl(Supplier<Float> data, DemoSize size, boolean requires_grad, boolean create_graph) {
-		this(data, size, new ArrayList<>(), requires_grad, create_graph);
-	}
-	
-    protected DemoFloatAutogradValueImpl(Supplier<Float> data, DemoSize size, List<Node<?>> childen, boolean requires_grad, boolean create_graph) {
-		super(data, size, childen, requires_grad, create_graph);
+
+    @Override
+    protected void close(Float data) {
+
+    }
+
+    protected DemoFloatAutogradValueImpl(AutogradValueProperties<DemoSize> properties, Supplier<Float> data) {
+		super(properties, data);
 	}
 
 	@Override
@@ -126,8 +125,13 @@ public class DemoFloatAutogradValueImpl extends AutogradValueImpl<DemoAutogradVa
 	}
 
 	@Override
-	protected DemoAutogradValue<Float> createAutogradValue(Supplier<Float> data, DemoSize size, List<Node<?>> childen, boolean requires_grad, boolean create_graph) {
-		return new DemoFloatAutogradValueImpl(data, size, childen, requires_grad, create_graph);
+    public String toString() {
+	    return name() + ":" + isClosed();
+    }
+
+	@Override
+	protected DemoAutogradValue<Float> createAutogradValue(Supplier<Float> data, AutogradValueProperties<DemoSize> properties) {
+		return new DemoFloatAutogradValueImpl(properties, data);
 	}
 
 	@Override

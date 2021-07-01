@@ -17,17 +17,19 @@ package org.ml4j.autograd.demo.scalarwrapper;
 import org.junit.jupiter.api.Assertions;
 import org.ml4j.autograd.demo.DemoAutogradValue;
 import org.ml4j.autograd.demo.DemoAutogradValueTestBase;
+import org.ml4j.autograd.demo.DemoSize;
+import org.ml4j.autograd.impl.AutogradValueProperties;
 
 public class DemoFloatOperationsAutogradValueTest extends DemoAutogradValueTestBase<DemoFloatOperations> {
 
 	@Override
 	protected DemoAutogradValue<DemoFloatOperations> createGradValue(float value, boolean requires_grad) {
-        return new DemoFloatOperationsAutogradValueImpl(() -> createData(value), size, requires_grad, false);
+        return new DemoFloatOperationsAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry).setRequires_grad(requires_grad),() -> createData(value));
 	}
 
 	@Override
 	protected DemoAutogradValue<DemoFloatOperations> createGradValue(DemoFloatOperations value, boolean requires_grad) {
-        return new DemoFloatOperationsAutogradValueImpl(() -> value, size, requires_grad, false);
+        return new DemoFloatOperationsAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry).setRequires_grad(requires_grad), () -> value);
 	}
 
 	@Override

@@ -14,9 +14,12 @@
 
 package org.ml4j.autograd.demo;
 
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.AutogradValueRegistry;
 import org.ml4j.autograd.BackwardConfig;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -35,6 +38,7 @@ public abstract class DemoAutogradValueTestBase<D> {
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        this.registry = AutogradValueRegistry.create(DemoAutogradValueTestBase.class.getName());
     }
 
     protected abstract DemoAutogradValue<D> createGradValue(float value, boolean requires_grad);
@@ -44,7 +48,49 @@ public abstract class DemoAutogradValueTestBase<D> {
     
     protected abstract D createData(float value);
 
-    
+    protected AutogradValueRegistry registry;
+
+
+    @Test
+    public void test_close() {
+
+        var a = createGradValue(-4f, true).name_("a");
+
+        var b = createGradValue(2.0f, true).name_("b");
+
+        var c = a.add(b).name_("c");
+
+        c.backward();
+
+        b.grad();
+
+        a.grad();
+
+        Assert.assertFalse(a.isClosing());
+        Assert.assertFalse(a.isClosed());
+        Assert.assertFalse(b.isClosing());
+        Assert.assertFalse(b.isClosed());
+        Assert.assertFalse(c.isClosing());
+        Assert.assertFalse(c.isClosed());
+
+        Assert.assertFalse(AutogradValueRegistry.allClosed());
+
+        AutogradValueRegistry.close();
+
+        Assert.assertTrue(AutogradValueRegistry.allClosed());
+
+        Assert.assertFalse(a.isClosing());
+        Assert.assertTrue(a.isClosed());
+        Assert.assertFalse(b.isClosing());
+        Assert.assertTrue(b.isClosed());
+        Assert.assertFalse(c.isClosing());
+        Assert.assertTrue(c.isClosed());
+
+        AutogradValueRegistry.clear();
+
+    }
+
+
     @Test
     public void test_example() {
 
@@ -79,7 +125,13 @@ public abstract class DemoAutogradValueTestBase<D> {
         assertEquals(createData(138.83f), a.grad().data().get());
 
         assertEquals(createData(645.58f), b.grad().data().get());
-    }
+
+        c.grad();
+        d.grad();
+        e.grad();
+        f.grad();
+
+        }
     
     protected abstract void assertEquals(D value1, D value2);
     
@@ -100,8 +152,8 @@ public abstract class DemoAutogradValueTestBase<D> {
 
         z.backward(new BackwardConfig().with_keep_graph(true));
 
-        var xGradAfterFirstBackward = x.grad();
-        var yGradAfterFirstBackward = y.grad();
+        var xGradAfterFirstBackward = x.grad(false);
+        var yGradAfterFirstBackward = y.grad(false);
 
         assertEquals(createData(1.6f), xGradAfterFirstBackward.data().get());
 

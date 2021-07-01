@@ -14,12 +14,13 @@
 
 package org.ml4j.autograd.arithmetic.operations;
 
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
-import java.util.function.UnaryOperator;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.Value;
+
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
+import java.util.function.UnaryOperator;
 
 /**
  * Wraps an ArithmeticOperations instance with differentiation.
@@ -49,7 +50,7 @@ public interface DifferentiableWrappedArithmeticOperations<V extends ArithmeticO
 
     @Override
     default V div(V other) {
-        return applyBinaryOperator(other, D::div, (g, p) -> g.div(p.getRight()), (g, p) -> g.neg().mul(p.getLeft()).div(p.getRight().mul(p.getRight())), "div", (f, s) -> f);
+        return applyBinaryOperator(other, D::div, (g, p) -> g.div(p.getRight()), (g, p) -> g.neg().mul(p.getLeft()).div(p.getRight().mul(p.getRight())), "div", (f, s) -> getMappedContext(f, s));
     }
     
     @Override
@@ -59,12 +60,12 @@ public interface DifferentiableWrappedArithmeticOperations<V extends ArithmeticO
 
     @Override
     default V mul(V other) {
-        return applyBinaryOperator(other, D::mul, (g, p) -> g.mul(p.getRight()), (g, p) -> g.mul(p.getLeft()), "mul", (f, s) -> f);
+        return applyBinaryOperator(other, D::mul, (g, p) -> g.mul(p.getRight()), (g, p) -> g.mul(p.getLeft()), "mult", (f, s) ->  getMappedContext(f, s));
     }
     
     @Override
     default V mul(float other) {
-        return applyUnaryOperator(D::mul, other, (g, v) -> g.mul(other), "mul", s -> s);
+        return applyUnaryOperator(D::mul, other, (g, v) -> g.mul(other), "muls", s -> s);
     }
     
     private UnaryOperator<D> unary(BiFunction<D, Float, D> op, float other) {

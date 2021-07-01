@@ -30,7 +30,7 @@ public interface Value<V, D, C> extends DataSupplier<D> {
     /**
      * A supplier of data.
      */
-    Supplier<D> data();
+    CachingDataSupplier<D> data();
 
     /**
      * Sets the supplier of data on this Value.

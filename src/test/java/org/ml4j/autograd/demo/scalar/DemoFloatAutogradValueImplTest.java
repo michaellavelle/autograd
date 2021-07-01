@@ -4,9 +4,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.ml4j.autograd.AutogradValueRegistry;
 import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.demo.DemoAutogradValue;
 import org.ml4j.autograd.demo.DemoSize;
+import org.ml4j.autograd.impl.AutogradValueProperties;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -14,15 +16,18 @@ public class DemoFloatAutogradValueImplTest {
 	
 	@Mock
 	private DemoSize size;
-	
+
+	protected AutogradValueRegistry registry;
+
 	@BeforeEach
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
+		this.registry = AutogradValueRegistry.create(DemoFloatAutogradValueImplTest.class.getName());
 	}
 
 	@Test
 	public void testValidConstruction() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, false, false);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setRegistry(registry).setContext(size), () -> 2.6f);
 		Assertions.assertEquals(2.6f, autogradValue.data().get());
 		Assertions.assertArrayEquals(new float[] {2.6f } , autogradValue.getDataAsFloatArray(), 0.01f);
 		Assertions.assertNotNull(autogradValue.getGradNode());
@@ -53,12 +58,12 @@ public class DemoFloatAutogradValueImplTest {
 	
 	@Test
 	public void testConstructorWithNullSupplier_throwsIllegalArgumentException() {
-		Assertions.assertThrows(IllegalArgumentException.class, () -> new DemoFloatAutogradValueImpl(null, size, false, false));
+		Assertions.assertThrows(IllegalArgumentException.class, () -> new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setRegistry(registry).setContext(size), null));
 	}
 	
 	@Test
 	public void testRequiresGrad() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, false, false);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setRegistry(registry).setContext(size),() -> 2.6f);
 		Assertions.assertFalse(autogradValue.requires_grad());
 	
 		autogradValue.requires_grad_(true);
@@ -73,7 +78,7 @@ public class DemoFloatAutogradValueImplTest {
 	
 	@Test
 	public void testName() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, false, false);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setRegistry(registry).setContext(size), () -> 2.6f);
 		Assertions.assertNull(autogradValue.name());
 	
 		autogradValue.name_("a");
@@ -88,50 +93,50 @@ public class DemoFloatAutogradValueImplTest {
 	
 	@Test
 	public void testBackwardNoArgs() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry).setRequires_grad(true), () -> 2.6f);
 		autogradValue.backward();
 	}
 	
 	@Test
 	public void testBackwardDefaultBackwardConfig() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry).setRequires_grad(true),() -> 2.6f);
 		autogradValue.backward(new BackwardConfig());
 	}
 	
 	@Test
 	public void testBackwardNullBackwardConfig() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry).setRequires_grad(true),() -> 2.6f);
 		Assertions.assertThrows(IllegalArgumentException.class, () -> autogradValue.backward((BackwardConfig) null));
 	}
 	
 	@Test
 	public void testBackwardDefaultBackwardConfigWithKeepGraphTrue() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry).setRequires_grad(true),() -> 2.6f);
 		autogradValue.backward(new BackwardConfig().with_keep_graph(true));
 	}
 	
 	@Test
 	public void testBackwardDefaultBackwardConfigWithKeepGraphFalse() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry).setRequires_grad(true),() -> 2.6f);
 		autogradValue.backward(new BackwardConfig().with_keep_graph(false));
 	}
 	
 	@Test
 	public void testBackwardDefaultBackwardConfigWithZeroGradTrue() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry).setRequires_grad(true),() -> 2.6f);
 		autogradValue.backward(new BackwardConfig().with_zero_grad(true));
 	}
 	
 	@Test
 	public void testBackwardDefaultBackwardConfigWithZeroGradFalse() {
-		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
+		DemoAutogradValue<Float> autogradValue = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry).setRequires_grad(true),() -> 2.6f);
 		autogradValue.backward(new BackwardConfig().with_zero_grad(false));
 	}
 	
 	@Test
 	public void testAdd() {
-		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
-		DemoAutogradValue<Float> second = new DemoFloatAutogradValueImpl(() -> 3.6f, size, true, false);
+		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry).setRequires_grad(true),() -> 2.6f);
+		DemoAutogradValue<Float> second = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry).setRequires_grad(true),() -> 3.6f);
 
 		DemoAutogradValue<Float> result = first.add(second);
 		
@@ -149,16 +154,16 @@ public class DemoFloatAutogradValueImplTest {
 		Assertions.assertNotNull(result.context());
 
 		// Assert that grads are null - no backward operation has yet been performed
+		Assertions.assertNull(result.grad());
 		Assertions.assertNull(first.grad());
 		Assertions.assertNull(second.grad());
-		Assertions.assertNull(result.grad());
 	}
 	
 	@Disabled
 	@Test
 	public void testAddWithBackward() {
-		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
-		DemoAutogradValue<Float> second = new DemoFloatAutogradValueImpl(() -> 3.6f, size, true, false);
+		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry).setRequires_grad(true),() -> 2.6f);
+		DemoAutogradValue<Float> second = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry).setRequires_grad(true),() -> 3.6f);
 
 		DemoAutogradValue<Float> result = first.add(second);
 		
@@ -185,18 +190,18 @@ public class DemoFloatAutogradValueImplTest {
 	
 	@Test
 	public void testSetGradientDoesNotThrowIllegalStateException_WhenRequiresGradIsFalse_WhenGradNotAlreadySet() {
-		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size, false, false);
-		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size, false, false);
+		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setRegistry(registry).setContext(size),() -> 2.6f);
+		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setRegistry(registry).setContext(size),() -> 3.1f);
 
 		first.getGradNode().setValue(() -> grad);
-		
+
 		Assertions.assertSame(grad, first.getGradNode().getValue().get());
 	}
 	
 	@Test
 	public void testSetGradientDoesNotThrowIllegalStateException_WhenRequiresGradIsTrue_WhenGradNotAlreadySet() {
-		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
-		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size, false, false);
+		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setRegistry(registry).setContext(size).setRequires_grad(true),() -> 2.6f);
+		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setRegistry(registry).setContext(size),() -> 3.1f);
 
 		first.getGradNode().setValue(() -> grad);
 	
@@ -207,8 +212,8 @@ public class DemoFloatAutogradValueImplTest {
 	
 	@Test
 	public void testSetGradientThrowsIllegalStateException_WhenRequiresGradIsFalse_WhenGradAlreadySet() {
-		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size, false, false);
-		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size, false, false);
+		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setRegistry(registry).setContext(size),() -> 2.6f);
+		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setRegistry(registry).setContext(size),() -> 3.1f);
 
 		first.getGradNode().setValue(() -> grad);
 		
@@ -217,8 +222,8 @@ public class DemoFloatAutogradValueImplTest {
 	
 	@Test
 	public void testSetGradientThrowsIllegalStateException_WhenRequiresGradIsTrue_WhenGradAlreadySet() {
-		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(() -> 2.6f, size, true, false);
-		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(() -> 3.1f, size, false, false);
+		DemoAutogradValue<Float> first = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry).setRequires_grad(true),() -> 2.6f);
+		DemoAutogradValue<Float> grad = new DemoFloatAutogradValueImpl(new AutogradValueProperties<DemoSize>().setContext(size).setRegistry(registry),() -> 3.1f);
 
 		first.getGradNode().setValue(() -> grad);
 		

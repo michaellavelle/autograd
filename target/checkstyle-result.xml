@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="8.29">
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/Accumulatable.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/impl/DefaultAutogradValueRegistry.java">
+<error line="6" severity="warning" message="Extra separation in import group before &apos;java.util.ArrayList&apos;" source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="6" severity="warning" message="Wrong lexicographical order for &apos;java.util.ArrayList&apos; import. Should be before &apos;org.ml4j.autograd.AutogradValueRegistry&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="7" severity="warning" message="Wrong lexicographical order for &apos;java.util.Iterator&apos; import. Should be before &apos;org.ml4j.autograd.AutogradValueRegistry&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="8" severity="warning" message="Wrong lexicographical order for &apos;java.util.List&apos; import. Should be before &apos;org.ml4j.autograd.AutogradValueRegistry&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/impl/ValueNodeWrapper.java">
+<error line="7" severity="warning" message="Extra separation in import group before &apos;java.util.List&apos;" source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="7" severity="warning" message="Wrong lexicographical order for &apos;java.util.List&apos; import. Should be before &apos;org.ml4j.autograd.node.ValueNode&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="8" severity="warning" message="Wrong lexicographical order for &apos;java.util.function.BiConsumer&apos; import. Should be before &apos;org.ml4j.autograd.node.ValueNode&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="9" severity="warning" message="Wrong lexicographical order for &apos;java.util.function.Function&apos; import. Should be before &apos;org.ml4j.autograd.node.ValueNode&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="10" severity="warning" message="Wrong lexicographical order for &apos;java.util.function.Supplier&apos; import. Should be before &apos;org.ml4j.autograd.node.ValueNode&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/impl/AutogradValueProperties.java">
+<error line="7" severity="warning" message="Extra separation in import group before &apos;java.util.ArrayList&apos;" source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="7" severity="warning" message="Wrong lexicographical order for &apos;java.util.ArrayList&apos; import. Should be before &apos;org.ml4j.autograd.node.Node&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="8" severity="warning" message="Wrong lexicographical order for &apos;java.util.List&apos; import. Should be before &apos;org.ml4j.autograd.node.Node&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/impl/NodeImpl.java">
+<error line="90" severity="warning" message="&apos;if&apos; construct must use &apos;{}&apos;s." source="com.puppycrawl.tools.checkstyle.checks.blocks.NeedBracesCheck"/>
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/impl/AutogradValueImpl.java">
+<error line="26" severity="warning" message="Extra separation in import group before &apos;org.apache.commons.lang3.tuple.ImmutablePair&apos;" source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="53" severity="warning" message="Distance between variable &apos;otherDat&apos; declaration and its first usage is 4, but allowed 3.  Consider making that variable final if you still need to store its value in advance (before method calls that might have side effects on the original value)." source="com.puppycrawl.tools.checkstyle.checks.coding.VariableDeclarationUsageDistanceCheck"/>
+<error line="64" column="79" severity="warning" message="WhitespaceAround: &apos;{&apos; is not preceded with whitespace." source="com.puppycrawl.tools.checkstyle.checks.whitespace.WhitespaceAroundCheck"/>
+<error line="91" severity="warning" message="&apos;if&apos; construct must use &apos;{}&apos;s." source="com.puppycrawl.tools.checkstyle.checks.blocks.NeedBracesCheck"/>
+<error line="138" severity="warning" message="Overload methods should not be split. Previous overloaded method located at line &apos;90&apos;." source="com.puppycrawl.tools.checkstyle.checks.coding.OverloadMethodsDeclarationOrderCheck"/>
+<error line="165" severity="warning" message="&apos;ctor def&apos; child has incorrect indentation level 12, expected level should be 8." source="com.puppycrawl.tools.checkstyle.checks.indentation.IndentationCheck"/>
+<error line="166" severity="warning" message="&apos;ctor def rcurly&apos; has incorrect indentation level 7, expected level should be 4." source="com.puppycrawl.tools.checkstyle.checks.indentation.IndentationCheck"/>
+<error line="366" severity="warning" message="&apos;if&apos; child has incorrect indentation level 15, expected level should be 16." source="com.puppycrawl.tools.checkstyle.checks.indentation.IndentationCheck"/>
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/impl/GradNodeImpl.java">
+<error line="17" column="8" severity="warning" message="Unused import - java.io.ByteArrayOutputStream." source="com.puppycrawl.tools.checkstyle.checks.imports.UnusedImportsCheck"/>
+<error line="18" column="8" severity="warning" message="Unused import - java.io.PrintWriter." source="com.puppycrawl.tools.checkstyle.checks.imports.UnusedImportsCheck"/>
+<error line="21" column="8" severity="warning" message="Unused import - java.util.function.BiConsumer." source="com.puppycrawl.tools.checkstyle.checks.imports.UnusedImportsCheck"/>
+<error line="25" column="8" severity="warning" message="Unused import - org.ml4j.autograd.BackwardConfig." source="com.puppycrawl.tools.checkstyle.checks.imports.UnusedImportsCheck"/>
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/impl/GradNodeWrapper.java">
+<error line="6" column="8" severity="warning" message="Unused import - org.ml4j.autograd.node.ValueNode." source="com.puppycrawl.tools.checkstyle.checks.imports.UnusedImportsCheck"/>
+<error line="8" severity="warning" message="Extra separation in import group before &apos;java.util.List&apos;" source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="8" severity="warning" message="Wrong lexicographical order for &apos;java.util.List&apos; import. Should be before &apos;org.ml4j.autograd.node.ValueNode&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="9" severity="warning" message="Wrong lexicographical order for &apos;java.util.Optional&apos; import. Should be before &apos;org.ml4j.autograd.node.ValueNode&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="10" severity="warning" message="Wrong lexicographical order for &apos;java.util.function.BiConsumer&apos; import. Should be before &apos;org.ml4j.autograd.node.ValueNode&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="10" column="8" severity="warning" message="Unused import - java.util.function.BiConsumer." source="com.puppycrawl.tools.checkstyle.checks.imports.UnusedImportsCheck"/>
+<error line="11" severity="warning" message="Wrong lexicographical order for &apos;java.util.function.BinaryOperator&apos; import. Should be before &apos;org.ml4j.autograd.node.ValueNode&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="12" severity="warning" message="Wrong lexicographical order for &apos;java.util.function.Function&apos; import. Should be before &apos;org.ml4j.autograd.node.ValueNode&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="13" severity="warning" message="Wrong lexicographical order for &apos;java.util.function.Supplier&apos; import. Should be before &apos;org.ml4j.autograd.node.ValueNode&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="95" column="50" severity="warning" message="&apos;{&apos; at column 50 should have line break after." source="com.puppycrawl.tools.checkstyle.checks.blocks.LeftCurlyCheck"/>
+<error line="95" column="181" severity="warning" message="Only one statement per line allowed." source="com.puppycrawl.tools.checkstyle.checks.coding.OneStatementPerLineCheck"/>
+<error line="95" column="182" severity="warning" message="WhitespaceAround: &apos;}&apos; is not preceded with whitespace." source="com.puppycrawl.tools.checkstyle.checks.whitespace.WhitespaceAroundCheck"/>
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/operators/DifferentiableUnaryOperator.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/operators/DifferentiableBinaryOperator.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/CachingDataSupplier.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/DataSupplier.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/AutogradValueFactory.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/AutogradValue.java">
+<error line="23" severity="warning" message="Extra separation in import group before &apos;java.util.function.Function&apos;" source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="23" severity="warning" message="Wrong lexicographical order for &apos;java.util.function.Function&apos; import. Should be before &apos;org.ml4j.autograd.operators.DifferentiableUnaryOperator&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="23" column="8" severity="warning" message="Unused import - java.util.function.Function." source="com.puppycrawl.tools.checkstyle.checks.imports.UnusedImportsCheck"/>
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/AutogradValueRegistry.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/CachingDataSupplierImpl.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/arithmetic/operations/DifferentiableWrappedArithmeticOperations.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/arithmetic/operations/ArithmeticOperations.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/Value.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/BackwardConfig.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/node/Node.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/node/AccumulatorNode.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/node/ValueNode.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/node/GradNode.java">
+</file>
+<file name="/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/AutogradValueCreator.java">
+<error line="5" severity="warning" message="Extra separation in import group before &apos;java.util.List&apos;" source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="5" severity="warning" message="Wrong lexicographical order for &apos;java.util.List&apos; import. Should be before &apos;org.ml4j.autograd.node.Node&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+<error line="6" severity="warning" message="Wrong lexicographical order for &apos;java.util.function.Supplier&apos; import. Should be before &apos;org.ml4j.autograd.node.Node&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+</file>
+</checkstyle>

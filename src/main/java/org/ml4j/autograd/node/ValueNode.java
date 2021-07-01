@@ -14,8 +14,9 @@
 
 package org.ml4j.autograd.node;
 
-import java.util.function.BiConsumer;
 import org.ml4j.autograd.BackwardConfig;
+
+import java.util.function.BiConsumer;
 
 /**
  * Represents a Node wrapping a (non-accumulating) AutogradValue.
