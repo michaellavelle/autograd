@@ -1,23 +1,22 @@
 package org.ml4j.autograd.impl;
 
 import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.AutogradValueRegistry;
 import org.ml4j.autograd.node.Node;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class AutogradValueProperties<C> {
 
     private String name;
     protected boolean create_graph;
-    private boolean closing;
     private boolean requires_grad;
     private C context;
     private List<Node<?>> children;
     private List<Node<?>> next;
     private List<Node<?>> links;
-    private List<AutogradValue<?, ?, ?>> allNodes;
+    private AutogradValueRegistry registry;
     private boolean uncloseable;
 
     public AutogradValueProperties() {
@@ -35,18 +34,18 @@ public class AutogradValueProperties<C> {
         return this;
     }
 
-    public AutogradValueProperties<C> setRegistry(List<AutogradValue<?, ?, ?>> registry) {
-        this.allNodes = registry;
+    public AutogradValueProperties<C> setRegistry(AutogradValueRegistry registry) {
+        this.registry = registry;
         return this;
     }
 
-    public List<AutogradValue<?, ?, ?>> getRegistry() {
-        return allNodes;
+    public AutogradValueRegistry getRegistry() {
+        return registry;
     }
 
     public void register(AutogradValue<?, ?, ?> value) {
-        if (allNodes != null) {
-            this.allNodes.add(value);
+        if (registry != null) {
+            this.registry.registerAutogradValue(value);
         } else {
             throw new IllegalStateException();
         }
@@ -59,11 +58,6 @@ public class AutogradValueProperties<C> {
 
     public AutogradValueProperties<C> setCreate_graph(boolean create_graph) {
         this.create_graph = create_graph;
-        return this;
-    }
-
-    public AutogradValueProperties<C> setClosing(boolean closing) {
-        this.closing = closing;
         return this;
     }
 
@@ -98,10 +92,6 @@ public class AutogradValueProperties<C> {
 
     public boolean isCreate_graph() {
         return create_graph;
-    }
-
-    public boolean isClosing() {
-        return closing;
     }
 
     public boolean isRequires_grad() {

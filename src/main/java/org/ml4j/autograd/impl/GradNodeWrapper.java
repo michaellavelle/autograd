@@ -3,11 +3,9 @@ package org.ml4j.autograd.impl;
 import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.node.GradNode;
 import org.ml4j.autograd.node.Node;
-import org.ml4j.autograd.node.ValueNode;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;

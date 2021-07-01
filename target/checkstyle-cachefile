@@ -1,0 +1,18 @@
+#Thu Jul 01 14:47:51 BST 2021
+configuration*?=3A8ADF27BC2C2C3A20B7C0DD68157571083CFB1
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/Accumulatable.java=1622041904341
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/AutogradValueFactory.java=1622041904346
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/operators/DifferentiableBinaryOperator.java=1622041904345
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/CachingDataSupplier.java=1623333160901
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/DataSupplier.java=1622041904345
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/node/AccumulatorNode.java=1622041904351
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/CachingDataSupplierImpl.java=1624648112511
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/BackwardConfig.java=1622041904349
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/node/ValueNode.java=1624572679064
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/node/GradNode.java=1623295195095
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/operators/DifferentiableUnaryOperator.java=1622041904344
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/Value.java=1625072065205
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/node/Node.java=1625147172749
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/arithmetic/operations/DifferentiableWrappedArithmeticOperations.java=1625083620384
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/AutogradValueRegistry.java=1625134227195
+/Users/michael/may2021/autograd/src/main/java/org/ml4j/autograd/arithmetic/operations/ArithmeticOperations.java=1622042292368

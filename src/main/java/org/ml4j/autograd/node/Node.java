@@ -14,9 +14,10 @@
 
 package org.ml4j.autograd.node;
 
+import org.ml4j.autograd.BackwardConfig;
+
 import java.util.List;
 import java.util.function.Supplier;
-import org.ml4j.autograd.BackwardConfig;
 
 
 /**
@@ -52,7 +53,6 @@ public interface Node<V> {
 
 
     List<Node<?>> next();
-
 
     void close();
 

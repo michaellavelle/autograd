@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.AutogradValueRegistry;
 import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.demo.DemoAutogradValue;
 import org.ml4j.autograd.demo.DemoSize;
@@ -12,20 +12,17 @@ import org.ml4j.autograd.impl.AutogradValueProperties;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class DemoFloatAutogradValueImplTest {
 	
 	@Mock
 	private DemoSize size;
 
-	protected List<AutogradValue<?, ?, ?>> registry;
+	protected AutogradValueRegistry registry;
 
 	@BeforeEach
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
-		this.registry = new ArrayList<>();
+		this.registry = AutogradValueRegistry.create(DemoFloatAutogradValueImplTest.class.getName());
 	}
 
 	@Test

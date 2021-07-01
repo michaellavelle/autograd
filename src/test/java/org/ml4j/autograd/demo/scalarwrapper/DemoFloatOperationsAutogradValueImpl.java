@@ -14,17 +14,14 @@
 
 package org.ml4j.autograd.demo.scalarwrapper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Supplier;
-
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.demo.DemoAutogradValue;
 import org.ml4j.autograd.demo.DemoSize;
 import org.ml4j.autograd.demo.DifferentiableWrappedDemoOperations;
 import org.ml4j.autograd.impl.AutogradValueImpl;
 import org.ml4j.autograd.impl.AutogradValueProperties;
-import org.ml4j.autograd.node.Node;
+
+import java.util.function.Supplier;
 
 /**
  * An AutogradValue implementation that supports the operations defined by DemoOperations, 

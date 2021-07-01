@@ -20,8 +20,6 @@ import org.ml4j.autograd.node.ValueNode;
 import org.ml4j.autograd.operators.DifferentiableBinaryOperator;
 import org.ml4j.autograd.operators.DifferentiableUnaryOperator;
 
-import java.util.function.Function;
-
 /**
  * Represents an AutogradValue of type V, with a Pytorch-like API.
  *
@@ -130,7 +128,6 @@ public interface AutogradValue<V, D, C> extends Value<V, D, C>, Accumulatable<V>
      * @param other The other AutogradValue.
      */
     void swapWith(V other);
-
 
     void close();
 

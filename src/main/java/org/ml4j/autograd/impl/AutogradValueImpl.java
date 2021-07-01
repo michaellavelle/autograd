@@ -14,26 +14,23 @@
 
 package org.ml4j.autograd.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.*;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.ml4j.autograd.*;
+import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.BackwardConfig;
+import org.ml4j.autograd.CachingDataSupplier;
+import org.ml4j.autograd.CachingDataSupplierImpl;
 import org.ml4j.autograd.node.GradNode;
 import org.ml4j.autograd.node.Node;
 import org.ml4j.autograd.node.ValueNode;
 import org.ml4j.autograd.operators.DifferentiableBinaryOperator;
 import org.ml4j.autograd.operators.DifferentiableUnaryOperator;
 
+import java.util.*;
+import java.util.function.*;
+
 /**
- * Not yet implemented base class for AuotgradValues.
+ * Base class for AutogradValues.
  *
  * @param <V> The concrete type of this AutogradValue.
  * @param <D> The type of data wrapped by this AutogradValue, eg. Float, Matrix, Tensor
@@ -46,13 +43,8 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
     private V currentInstance;
     private GradNode<V> gradNode;
     private ValueNode<V> valueNode;
-    //protected C context;
     private CachingDataSupplier<D> data;
-    //private boolean requires_grad;
-   // private String name;
     private V cachedGrad;
-    //protected boolean create_graph;
-    //private boolean closing;
 
     public <X extends AutogradValue<X, Y, Z>, Y, Z> AutogradValueImpl(AutogradValue<X, Y, Z> other, Function<Y, D> dataMapper, Function<Z, C> contextMapper, Function<X, V> valueMapper, Function<V, X> valueReverseMapper, Supplier<Optional<V>> nativeGradientSupplier) {
         D otherDat = dataMapper.apply(other.data().get());
@@ -78,6 +70,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
             g.setBackwardFunction((v, c) -> ((GradNodeImpl<X>)other.getGradNode()).getBackwardFunction().accept(valueReverseMapper.apply(v), c));
         }
         this.gradNode = g;
+        this.gradNode.setNativeGradientSupplier(nativeGradientSupplier);
         if (data == null) {
             throw new IllegalArgumentException("Data supplier can not be null");
         }
@@ -87,62 +80,12 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         this.properties.setName(other.name());
         this.properties.addLink(other.getValueNode());
         other.properties().addLink(getValueNode());
-
-        /*
-        this.data = () -> dataMapper.apply(other.data().get());
-        this.context = contextMapper.apply(other.context());
-        this.currentInstance = getInitialInstance();
-        GradNodeImpl<V> g = new GradNodeImpl<>(() -> valueMapper.apply(other.getGradNode().getValue().get()), nativeGradientSupplier);
-        g.setBackwardFunction((v, c) -> ((GradNodeImpl<X>)other.getGradNode()).getBackwardFunction().accept(valueReverseMapper.apply(v), c));
-        g.prev = other.getGradNode().prev();
-        this.gradNode = g;
-        this.gradNode.setDisableNativeGradient(other.getGradNode().isDisableNativeGradient());
-        this.valueNode = new NodeImpl<>(other.getValueNode(), valueMapper, valueReverseMapper);
-        valueNode.setBackwardFunction((v, c) -> ((NodeImpl<X>)other.getValueNode()).getBackwardFunction().accept(valueReverseMapper.apply(v), c));
-        this.requires_grad = other.requires_grad();
-        this.name = other.name();
-        this.create_graph = other.create_graph();
-
-         */
         properties().setRegistry(other.properties().getRegistry());
         properties().register(this);
     }
 
     public void close() {
-
-        if (!properties().isUncloseable()) {
-
-
-            this.properties.setClosing(true);
-            getValueNode().setClosing(true);
-            System.out.println("Closing:" + properties.getName());
-            for (Node<?> node : getValueNode().prev()) {
-                List<Node<?>> toRemove = new ArrayList<>();
-                for (Node<?> n : node.next()) {
-                    if (n == getValueNode()) {
-                        toRemove.add(n);
-                    }
-                }
-                node.next().removeAll(toRemove);
-                if (node.next().isEmpty()) {
-                    node.close();
-                }
-            }
-            for (Node<?> link : properties.getLinks()) {
-                if (link != getValueNode()) {
-                    if (!link.isClosing()) {
-                        link.close();
-                        System.out.println("Closing link");
-                    }
-                }
-            }
-            close(data().get());
-            data().clearCache();
-            data_(additiveIdentity());
-            System.out.println("CLOSED:" + name());
-            this.getValueNode().setClosed(true);
-
-        }
+        setClosed(true);
     }
 
     @Override
@@ -157,7 +100,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
 
     @Override
     public boolean isClosing() {
-        return properties.isClosing();
+        return valueNode.isClosing();
     }
 
     protected abstract void close(D data);
@@ -262,7 +205,6 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
 
         final BiFunction<V, Pair<V, V>, V> backOtherAdaptedFinal = backOtherAdapted;
 
-
         UnaryOperator<V> backThisKeepGraph = g -> backThisAdaptedFinal.apply(g, new ImmutablePair<>(self(), other));
         UnaryOperator<V> backThisNonKeepGraph = (g) -> backThisAdaptedFinal.apply(g, new ImmutablePair<>(addLink(createAutogradValue(this.data(), new AutogradValueProperties<C>().setRegistry(this.properties.getRegistry()).setContext(inputContext).setName("binaryBack3")).self()), addLink(createAutogradValue(other.data(), new AutogradValueProperties<C>().setContext(otherContext).setRegistry(this.properties.getRegistry()).setName("binaryBack1")).self())));
         UnaryOperator<V> backOtherKeepGraph = (g) -> backOtherAdaptedFinal.apply(g, new ImmutablePair<>(self(), other));
@@ -293,10 +235,18 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
             }
         };
 
-        return this.convertBackward(wrapBackward(backwardFunction));
+        return convertBackward(wrapBackward(backwardFunction));
 
     }
 
+    /**
+     * Creates an AutogradValue of type V from a supplier of data of type D, and an instance of
+     * AutogradValueProperties wrapping a context of type C
+     *
+     * @param data The supplier of data.
+     * @param properties The properties.
+     * @return an AutogradValue of type V for these data and properties.
+     */
     protected abstract V createAutogradValue(Supplier<D> data, AutogradValueProperties<C> properties);
 
     /**
@@ -363,13 +313,12 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
 
     @Override
     public V grad() {
-        return grad(true);
+        return grad(false);
     }
 
     @Override
     public V grad(boolean close) {
-
-        Optional<V> nativeGradient = requires_grad() || getGradNode().isDisableNativeGradient() ? Optional.empty() : getGradNode().native_grad();
+        Optional<V> nativeGradient = (!requires_grad() || getGradNode().isDisableNativeGradient()) ? Optional.empty() : getGradNode().native_grad();
         V grad = nativeGradient.isPresent() && nativeGradient.get().data().get() != null ? nativeGradient.get() : getGradNode().getValue().get();
         if (cachedGrad != null && grad != cachedGrad) {
             cachedGrad.swapWith(grad);
@@ -380,54 +329,10 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
             this.cachedGrad.getValueNode().getValue().get().data().get();
         }
 
-        if (!properties().isUncloseable()) {
-
-
-            if (close && !isClosed()) {
-                this.properties.setClosing(true);
-                getValueNode().setClosing(true);
-                getGradNode().setClosing(true);
-
-                boolean allClosing = true;
-                List<Node<?>> toClose = new ArrayList<>();
-                for (Node<?> next : getValueNode().next()) {
-                    boolean allLocalClosing = true;
-
-                    for (Node<?> prev : next.prev()) {
-                        if (!prev.isClosing()) {
-                            allClosing = false;
-                            allLocalClosing = false;
-                            System.out.println("Not closing:" + prev.getValue().get());
-                        }
-                    }
-
-                    if (allLocalClosing && next.next().isEmpty()) {
-                        toClose.add(next);
-                    }
-                }
-                for (Node<?> c : toClose) {
-                    c.close();
-                }
-                System.out.println(this + ":AllClosing:" + allClosing);
-
-                if (allClosing) {
-                    for (Node<?> next : getValueNode().next()) {
-                        for (Node<?> prev : next.prev()) {
-                            if (prev.isClosing()) {
-                                prev.close();
-                            }
-                        }
-                    }
-                    close();
-                } else {
-                    if (!requires_grad()) {
-                        close();
-                    }
-                }
-            }
+        if (close && !properties().isUncloseable()) {
+            close();
         }
         return cachedGrad;
-
     }
 
     @Override
@@ -460,7 +365,6 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C> 
         // go one variable at a time and apply the chain rule to get its gradient
         getGradNode().setValue(() -> g);
 
-        //grad = keep_graph ? create(identity.get(), c, "one", false).self() : create(identity.get(), c, "one", false).self();
         List<Node<?>> reversed = new ArrayList<>();
         reversed.addAll(topo);
         Collections.reverse(reversed);

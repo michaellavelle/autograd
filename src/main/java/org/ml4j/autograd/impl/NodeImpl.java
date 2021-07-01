@@ -14,14 +14,15 @@
 
 package org.ml4j.autograd.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Supplier;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.node.Node;
 import org.ml4j.autograd.node.ValueNode;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 /**
  * Default implementation of Node.
@@ -87,21 +88,7 @@ public class NodeImpl<V extends AutogradValue<V, ?, ?>> implements ValueNode<V> 
 
     @Override
     public void close() {
-        //prev.clear();
-        //next.clear();
-        if (value != null && value.get() != null) {
-            V val = value.get();
-            if (val != null && !val.properties().isUncloseable()) {
-                if (!val.isClosing()) {
-                    val.close();
-                }
-                closing = true;
-            }
-        } else {
-            closed = true;
-        }
-
-        //value = null;
+        this.closed = true;
     }
 
     public boolean isClosed() {
@@ -120,7 +107,6 @@ public class NodeImpl<V extends AutogradValue<V, ?, ?>> implements ValueNode<V> 
             return super.toString();
         }
     }
-
 
     @Override
     public void setClosing(boolean closing) {

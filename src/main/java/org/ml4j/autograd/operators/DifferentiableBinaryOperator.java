@@ -14,9 +14,10 @@
 
 package org.ml4j.autograd.operators;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
-import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Represents a differentiable binary operator for AutogradValues

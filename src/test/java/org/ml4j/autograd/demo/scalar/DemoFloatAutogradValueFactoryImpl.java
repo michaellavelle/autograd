@@ -1,11 +1,11 @@
 package org.ml4j.autograd.demo.scalar;
 
-import java.util.function.Supplier;
-
 import org.ml4j.autograd.demo.DemoAutogradValue;
 import org.ml4j.autograd.demo.DemoAutogradValueFactory;
 import org.ml4j.autograd.demo.DemoSize;
 import org.ml4j.autograd.impl.AutogradValueProperties;
+
+import java.util.function.Supplier;
 
 public class DemoFloatAutogradValueFactoryImpl implements DemoAutogradValueFactory<Float> {
 

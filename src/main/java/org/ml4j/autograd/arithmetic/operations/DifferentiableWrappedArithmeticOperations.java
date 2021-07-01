@@ -14,12 +14,13 @@
 
 package org.ml4j.autograd.arithmetic.operations;
 
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
-import java.util.function.UnaryOperator;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.Value;
+
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
+import java.util.function.UnaryOperator;
 
 /**
  * Wraps an ArithmeticOperations instance with differentiation.

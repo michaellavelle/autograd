@@ -14,16 +14,13 @@
 
 package org.ml4j.autograd.impl;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
+import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.node.GradNode;
+
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
-import org.ml4j.autograd.AutogradValue;
-import org.ml4j.autograd.BackwardConfig;
-import org.ml4j.autograd.node.GradNode;
 
 /**
  * Default implementation of GradNode.
