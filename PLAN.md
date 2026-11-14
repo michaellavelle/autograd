@@ -31,7 +31,10 @@ Future items are discussion tracks, not authorization or a prescribed implementa
 
 ## Current status
 
-No runtime increment is currently selected. Documentation consolidation is complete:
+Conditional unary/binary backward graph construction is complete.
+Untracked results preserve lazy forward evaluation and reject tracking changes;
+tracked and specialized graph construction retain existing differentiation behaviour.
+Documentation consolidation is complete:
 SPEC.md describes current contracts and this plan focuses on remaining decisions.
 The existing differentiable arithmetic, activation and math hierarchy is retained.
 

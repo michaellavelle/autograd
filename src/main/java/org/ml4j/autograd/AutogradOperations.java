@@ -47,7 +47,8 @@ public interface AutogradOperations<V> {
      *
      * <p>For example, a scalar or tensor parameter can enable tracking before
      * building a training graph and disable it before building an inference graph.
-     * Only leaves (values with no graph inputs) can change this flag. Set it before
+     * Only leaves can change this flag; ordinary unary/binary operation results
+     * cannot, including untracked results with empty graph inputs. Set it before
      * constructing the next graph; do not change it while a graph involving this
      * leaf is still needed for backward or higher derivatives.
      *
@@ -57,7 +58,8 @@ public interface AutogradOperations<V> {
      * does not detect outstanding graphs or support concurrent toggling/backward.
      *
      * @param enabled whether future differentiation should calculate this leaf's gradient
-     * @throws IllegalStateException if this value has graph inputs, even if the flag is unchanged
+     * @throws IllegalStateException if this value is an ordinary operation result or has graph inputs,
+     * even if the flag is unchanged
      */
     void setRequiresGrad(boolean enabled);
 

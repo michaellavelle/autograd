@@ -8,8 +8,8 @@ package org.ml4j.autograd;
  *
  * <p>This contract describes value combination, not the state that holds an
  * accumulated gradient. Addition does not mutate either operand. Differentiable
- * implementations retain the input dependencies and backward rule on the result
- * so that the sum can itself participate in differentiation.
+ * implementations retain input dependencies and a backward rule when the result
+ * requires gradients, so that the sum can itself participate in differentiation.
  *
  * @param <V> the type of value being combined and returned
  */
@@ -24,7 +24,7 @@ public interface Accumulatable<V> {
      *
      * <p>The result is non-null. Neither operand's data, computation graph, nor
      * gradient state is modified. Differentiable implementations combine both
-     * operands' gradient requirements and retain their dependencies on the result.
+     * operands' gradient requirements and retain backward dependencies when required.
      * Result object identity and evaluation/caching strategy are not prescribed.
      *
      * @param other a non-null compatible operand

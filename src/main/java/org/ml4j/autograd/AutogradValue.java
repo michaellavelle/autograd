@@ -28,7 +28,7 @@ import java.util.Optional;
  *
  * <p>This value coordinates graph-wide backward passes. Value nodes execute local
  * rules; gradient nodes store contributions. Addition follows the non-mutating
- * {@link Accumulatable} contract, retaining dependencies on the result.
+ * {@link Accumulatable} contract, retaining backward dependencies when gradients are required.
  *
  * @param <V> the concrete autograd value type, also used to represent gradients
  * @param <D> the numerical data type, such as Float or a tensor implementation
@@ -41,7 +41,7 @@ public interface AutogradValue<V extends AutogradValue<V, D, C>, D, C>
      * Returns the node describing this value's computation and inputs.
      *
      * <p>A directly supplied scalar or tensor is a leaf with no inputs. An operation
-     * result records its operands as input nodes.
+     * tracked result records its operands as input nodes.
      *
      * @return a non-null node representing this value
      */

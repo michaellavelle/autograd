@@ -119,8 +119,8 @@ V add(V other);
 - Accepts a non-null compatible operand and returns a non-null sum.
 - Addition does not mutate either operand's numerical data, computation graph,
   or gradient state. Storing the sum in an accumulator is a separate responsibility.
-- Differentiable implementations retain the operand dependencies and backward rule
-  on the result and combine both operands' gradient requirements.
+- Differentiable implementations combine both operands' gradient requirements.
+  They retain operand dependencies and a backward rule only when the result requires gradients.
 - Numerical data and context must be compatible. Tensor shape compatibility and
   broadcasting rules are defined by concrete numerical implementations, not this interface.
 - No result object-identity, evaluation, or caching strategy is prescribed.
@@ -308,8 +308,19 @@ that exact handle. Supply an independent, initially empty node; construction doe
 inspect, reset or invoke it, evaluate data, or call subclass hooks. Data evaluation
 rejects null results and adds no caching.
 
-Tracking changes are leaf-only, including unchanged-flag requests: operation results
-throw IllegalStateException. Leaf changes are idempotent and lazy, preserving data,
+Ordinary unary/binary operations snapshot the combined gradient requirement at
+construction. When false, their nodes have empty inputs and no backward callback;
+when true, ordered inputs (including constants and duplicates) and derivative rules
+are preserved. Forward suppliers still capture operands lazily. Optional
+CachingDataSupplier wrappers release those closures after success; uncached values
+continue to retain forward dependencies for repeated evaluation. No eager evaluation
+or numerical copying is introduced. Constant operations already have no backward graph.
+Direct constructors/result factories preserve explicitly supplied inputs, including
+specialized differentiation graphs; they are not filtered by requiresGrad.
+
+Tracking changes are leaf-only, including unchanged-flag requests: ordinary operation results
+throw IllegalStateException even when their untracked nodes have no inputs.
+Constant-operation results retain their existing leaf behaviour. Leaf changes are idempotent and lazy, preserving data,
 context, nodes and stored gradients. Toggle before constructing a new graph and finish
 backward/higher derivatives on previous graphs first. Existing results retain their
 flags; callbacks read current operand flags. Reuse after leaf toggling is unsupported;
@@ -332,8 +343,9 @@ C mapContext(C leftContext, C rightContext);
 
 Non-null functions/operands are required. Context maps once without numerical reads;
 scalar context may be null, tensor context describes compatible output shape.
-Unary results record one input and inherit tracking. Binary results preserve operand
-order and duplicates and require gradients if either operand does. Local callbacks
+Unary results inherit tracking; binary results require gradients if either operand
+does. Tracked results record ordered inputs including duplicates and local callbacks;
+untracked results record neither inputs nor callbacks. Local callbacks
 skip constants and absent gradients and accumulate separate contributions for each
 tracked operand position. They do not traverse the graph or mutate operand contents.
 Constant operations create untracked leaves with empty inputs, absent gradients and

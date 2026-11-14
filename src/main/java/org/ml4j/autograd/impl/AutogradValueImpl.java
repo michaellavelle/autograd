@@ -27,7 +27,7 @@ import java.util.function.UnaryOperator;
  * <p>Implementations supply numerical operations, result construction and context
  * mapping for structures such as scalars, vectors, matrices or tensors, either
  * directly or through differentiable operation defaults. All structures use the
- * same ordered graph inputs and gradient-state handles.
+ * same ordered backward graph inputs when tracked and stable gradient-state handles.
  *
  * <p>Each operation supplies its local derivative rules. Graph-wide passes order reachable
  * nodes by dependency, propagate new contributions, and retain previous leaf gradients.
@@ -56,6 +56,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C>
     private final Supplier<D> data;
     private final C context;
     private boolean requiresGrad;
+    private boolean operationResult;
     private final ValueNode<V> valueNode;
     private final GradNode<V> gradNode;
 
@@ -174,7 +175,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C>
     /** {@inheritDoc} */
     @Override
     public void setRequiresGrad(boolean requiresGrad) {
-        if (!valueNode.inputs().isEmpty()) {
+        if (operationResult || !valueNode.inputs().isEmpty()) {
             throw new IllegalStateException("Only leaves can change their gradient requirement");
         }
         this.requiresGrad = requiresGrad;
@@ -187,7 +188,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C>
     @Override public final GradNode<V> gradNode() { return gradNode; }
 
     /**
-     * Constructs a lazy binary result and installs its local backward callback.
+     * Constructs a lazy binary result, recording backward state only when gradients are required.
      *
      * <p>The context mapper runs once at construction; numerical evaluation is deferred.
      * Scalar operands may have no context; tensor implementations map compatible shapes.
@@ -197,7 +198,7 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C>
      * <p>Subclasses may wrap forward operations or derivative rules, for example to
      * reduce broadcast tensor gradients or record backend operations, then delegate
      * to super. Overrides must preserve lazy evaluation, context mapping once,
-     * ordered inputs including duplicates, combined gradient requirements, and local
+     * ordered inputs including duplicates when tracked, combined gradient requirements, and local
      * accumulation without mutating operands. Derivative rules must preserve
      * higher-derivative dependencies and skip constants and absent gradients.
      *
@@ -217,9 +218,13 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C>
         Objects.requireNonNull(rightGradient, "rightGradient");
         Objects.requireNonNull(contextMapper, "contextMapper");
         C outputContext = contextMapper.apply(context(), other.context());
-        var operation = new OriginSupplier<D>(() -> forward.apply(data().get(), other.data().get()));
-        V result = createAutogradValue(operation,
-                outputContext, requiresGrad() || other.requiresGrad(), List.of(valueNode(), other.valueNode()));
+        OriginSupplier<D> operation = new OriginSupplier<D>(() -> forward.apply(data().get(), other.data().get()));
+        boolean trackGradients = requiresGrad() || other.requiresGrad();
+        V result = createOperationResult(operation, outputContext, trackGradients,
+                trackGradients ? List.of(valueNode(), other.valueNode()) : List.of());
+        if (!trackGradients) {
+            return result;
+        }
         result.valueNode().setBackwardFunction(operation.backward(resultValue -> {
             if (!resultValue.requiresGrad()) {
                 return;
@@ -240,16 +245,17 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C>
     }
 
     /**
-     * Constructs a lazy unary result and installs its local backward callback.
+     * Constructs a lazy unary result, recording backward state only when gradients are required.
      *
-     * <p>Scalar negation or a tensor operation records this value as its single input.
+     * <p>Tracked scalar negation or a tensor operation records this value as its single input.
+     * Untracked results have no inputs or callback; forward evaluation still needs the operand.
      * Context is mapped once without evaluating data. The callback extracts the
      * result's incoming gradient and passes it with the original operand to the rule.
      * Constants and absent gradients cause no propagation; accumulation is local.
      *
      * <p>Subclasses may wrap the forward operation or derivative rule for backend
      * integration, then delegate to super. Overrides must preserve lazy evaluation,
-     * context mapping once, the single ordered input, the operand's gradient
+     * context mapping once, a single input only when tracked, the operand's gradient
      * requirement, and local accumulation without mutating the operand. Derivative
      * rules must preserve higher-derivative dependencies and skip constants and
      * absent gradients.
@@ -266,9 +272,13 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C>
         Objects.requireNonNull(gradient, "gradient");
         Objects.requireNonNull(contextMapper, "contextMapper");
         C outputContext = contextMapper.apply(context());
-        var operation = new OriginSupplier<D>(() -> forward.apply(data().get()));
-        V result = createAutogradValue(operation,
-                outputContext, requiresGrad(), List.of(valueNode()));
+        OriginSupplier<D> operation = new OriginSupplier<D>(() -> forward.apply(data().get()));
+        boolean trackGradients = requiresGrad();
+        V result = createOperationResult(operation, outputContext, trackGradients,
+                trackGradients ? List.of(valueNode()) : List.of());
+        if (!trackGradients) {
+            return result;
+        }
         result.valueNode().setBackwardFunction(operation.backward(resultValue -> {
             if (resultValue.requiresGrad() && requiresGrad()) {
                 resultValue.gradNode().gradient().ifPresent(incomingGradient ->
@@ -276,6 +286,16 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C>
                                 gradNode().accumulate(gradient.apply(incomingGradient, self()))));
             }
         }));
+        return result;
+    }
+
+    // Preserve operation-result tracking immutability without retaining operand nodes.
+    private V createOperationResult(Supplier<D> supplier, C outputContext, boolean trackGradients,
+                                    List<? extends ValueNode<?>> inputs) {
+        V result = createAutogradValue(supplier, outputContext, trackGradients, inputs);
+        if (result instanceof AutogradValueImpl<?, ?, ?> sharedResult) {
+            sharedResult.operationResult = true;
+        }
         return result;
     }
 
@@ -312,7 +332,8 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C>
      * @param dataSupplier lazy result data
      * @param context mapped output metadata
      * @param requiresGrad combined operand gradient requirement
-     * @param inputs ordered dependencies, preserving duplicate operands
+     * @param inputs ordered backward dependencies, preserving duplicates; empty for
+     *               ordinary untracked operations
      * @return the new result value
      */
     protected abstract V createAutogradValue(Supplier<D> dataSupplier, C context, boolean requiresGrad,

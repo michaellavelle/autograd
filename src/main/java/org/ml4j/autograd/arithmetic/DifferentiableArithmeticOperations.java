@@ -143,6 +143,7 @@ public interface DifferentiableArithmeticOperations<V extends AutogradValue<V, D
                 UnaryOperator.identity());
     }
 
+
     /**
      * Adds a fixed scalar constant through a lazy unary operation.
      *
@@ -252,11 +253,12 @@ public interface DifferentiableArithmeticOperations<V extends AutogradValue<V, D
     V applyConstantOperator(UnaryOperator<D> forward, UnaryOperator<C> contextMapper);
 
     /**
-     * Builds a unary result and installs its local backward callback.
+     * Builds a lazy unary result, recording backward state only when gradients are required.
      *
      * <p>Scalar or tensor rules receive the result's incoming gradient and original
      * operand. The context mapper runs once; numerical evaluation remains deferred.
-     * The result records one input and preserves the operand's gradient requirement.
+     * The result preserves the operand's gradient requirement. Only tracked results
+     * record an input and callback; untracked results retain only lazy forward dependencies.
      * Local propagation skips constants and absent gradients, accumulating a contribution
      * without traversing inputs. Rules must preserve higher-derivative dependencies.
      *
@@ -282,14 +284,15 @@ public interface DifferentiableArithmeticOperations<V extends AutogradValue<V, D
     C mapContext(C leftContext, C rightContext);
 
     /**
-     * Builds a binary result and installs its local backward callback.
+     * Builds a lazy binary result, recording backward state only when gradients are required.
      *
      * <p>Default arithmetic passes a numerical method reference such as D::add and
      * two derivative rules. The result callback receives the forward result value;
      * derivative rules receive its incoming gradient and the ordered operands.
      *
      * <p>Implementations map context once, defer numerical evaluation, preserve
-     * ordered inputs including duplicates, and combine operand gradient requirements.
+     * ordered inputs including duplicates when tracked, and combine operand gradient requirements.
+     * Untracked results have no graph inputs or callback, while forward evaluation remains lazy.
      * Local propagation skips absent gradients and constants and accumulates each
      * tracked operand's contribution without traversing the graph.
      *
