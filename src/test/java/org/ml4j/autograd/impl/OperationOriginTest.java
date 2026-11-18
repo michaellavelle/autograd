@@ -75,11 +75,11 @@ class OperationOriginTest {
                 originTestFrame(accumulationFailure).getMethodName());
     }
 
-    @Test void lazyGradientDataAndConstantOperationsReceiveOrigins() {
+    @Test void lazyGradientDataAndNonDifferentiableOperationsReceiveOrigins() {
         var leaf = new TestValue(2f, true);
         var failure = new IllegalStateException("lazy derivative failed");
         var result = leaf.applyUnaryOperator(x -> x, (g, x) ->
-                x.applyConstantOperator(value -> { throw failure; }, c -> c), c -> c);
+                x.applyNonDifferentiableOperator(value -> { throw failure; }, c -> c), c -> c);
         result.backward(new TestValue(1f, false));
         assertEquals(0, failure.getSuppressed().length);
         assertSame(failure, assertThrows(IllegalStateException.class,

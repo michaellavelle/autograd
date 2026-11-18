@@ -314,13 +314,13 @@ when true, ordered inputs (including constants and duplicates) and derivative ru
 are preserved. Forward suppliers still capture operands lazily. Optional
 CachingDataSupplier wrappers release those closures after success; uncached values
 continue to retain forward dependencies for repeated evaluation. No eager evaluation
-or numerical copying is introduced. Constant operations already have no backward graph.
+or numerical copying is introduced. Non-differentiable operations have no backward graph.
 Direct constructors/result factories preserve explicitly supplied inputs, including
 specialized differentiation graphs; they are not filtered by requiresGrad.
 
 Tracking changes are leaf-only, including unchanged-flag requests: ordinary operation results
 throw IllegalStateException even when their untracked nodes have no inputs.
-Constant-operation results retain their existing leaf behaviour. Leaf changes are idempotent and lazy, preserving data,
+Non-differentiable-operation results retain their existing leaf behaviour. Leaf changes are idempotent and lazy, preserving data,
 context, nodes and stored gradients. Toggle before constructing a new graph and finish
 backward/higher derivatives on previous graphs first. Existing results retain their
 flags; callbacks read current operand flags. Reuse after leaf toggling is unsupported;
@@ -337,7 +337,9 @@ V applyUnaryOperator(UnaryOperator<D> forward, UnaryGradient<V> gradient,
 V applyBinaryOperator(V other, BinaryOperator<D> forward,
                      BinaryGradient<V> leftGradient, BinaryGradient<V> rightGradient,
                      BinaryOperator<C> contextMapper);
-V applyConstantOperator(UnaryOperator<D> forward, UnaryOperator<C> contextMapper);
+V applyNonDifferentiableOperator(UnaryOperator<D> forwardOperator, UnaryOperator<C> contextMapper);
+V applyNonDifferentiableOperator(V other, BinaryOperator<D> forwardOperator,
+                                 BinaryOperator<C> contextMapper);
 C mapContext(C leftContext, C rightContext);
 ```
 
@@ -348,8 +350,15 @@ does. Tracked results record ordered inputs including duplicates and local callb
 untracked results record neither inputs nor callbacks. Local callbacks
 skip constants and absent gradients and accumulate separate contributions for each
 tracked operand position. They do not traverse the graph or mutate operand contents.
-Constant operations create untracked leaves with empty inputs, absent gradients and
-no callback; captured data suppliers do not establish graph edges.
+Non-differentiable operations create untracked leaves with empty inputs, absent gradients and
+no callback; captured data suppliers do not establish graph edges. Unary operations
+retain the receiver in their lazy numerical supplier; binary operations retain both
+operands in left/right order, regardless of operand tracking. Context mapping runs
+once at construction without numerical evaluation. Results may depend numerically
+on their operands; non-differentiability does not mean numerical constancy. Optional
+caching retains/releases these closures under its existing policy. Null operands or
+functions cause NullPointerException. The renamed unary hook has no compatibility bridge;
+custom implementations must also supply the binary hook.
 
 Hooks are overridable: implementations may wrap numerical/derivative rules for backend
 recording or broadcast-gradient reduction, preserving laziness, context mapping once,
@@ -401,7 +410,7 @@ non-elementwise products require overrides. For incoming gradient g:
 | x * c, x / c | g * c, g / c |
 
 Scalar overloads use one unary input and identity context mapping, with no scalar
-leaf or gradient for c. gt/gte use applyConstantOperator and preserve context;
+leaf or gradient for c. gt/gte use applyNonDifferentiableOperator and preserve context;
 gradients do not flow through the masks. dataAsFloatArray() remains a required
 implementation method. Derivative expressions retain differentiable dependencies;
 singularities and overflow/underflow are not regularised.
@@ -556,7 +565,7 @@ implements Supplier, not the DataSupplier owner capability.
 ## Implementation diagnostics: operation origins
 
 AutogradValueImpl captures one construction stack per shared unary, binary or
-constant operation, reused for lazy data evaluation and the entire local backward
+non-differentiable operation, reused for lazy data evaluation and the entire local backward
 callback (including accumulation). Leaf suppliers capture their own origin.
 RuntimeExceptions retain their identity and type; the first failing boundary adds
 a private origin marker as a suppressed exception. Enclosing boundaries do not add

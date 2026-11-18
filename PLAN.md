@@ -21,6 +21,11 @@ Future items are discussion tracks, not authorization or a prescribed implementa
 - Shared unary/binary graph construction, local derivative rules and graph-wide
   backward traversal, including duplicate/shared inputs, explicit/implicit seeds,
   repeated passes, receiver-local reset and higher derivatives.
+- Unary and binary non-differentiable operator hooks preserve lazy numerical operand
+  dependencies and context mapping without tracking or differentiation edges. The unary
+  hook was renamed with no compatibility bridge; downstream implementations must migrate
+  callers/overrides and supply the binary overload. Full verification passed 142 tests;
+  the updated `org.ml4j:autograd:3.0.0-SNAPSHOT` was installed locally.
 - Raw and wrapped scalar interfaces, implementations and leaf factories; shared
   arithmetic/comparison, ReLU/sigmoid and exp/log/pow capabilities.
 - Non-evaluating cache inspection through CachingDataSupplier.cachedValue(), preserving

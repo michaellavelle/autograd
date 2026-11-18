@@ -85,21 +85,38 @@ class SharedScalarDefaultsTest {
     }
 
     @Test
-    void constantHelperMapsContextOnceAndRejectsNullFunctionsWithoutEvaluation() {
+    void nonDifferentiableUnaryMapsContextOnceAndRejectsNullFunctionsWithoutEvaluation() {
         var reads = new AtomicInteger();
         var maps = new AtomicInteger();
         var input = factory.create(() -> {
             reads.incrementAndGet(); return new FloatWrapperImpl(2f);
         }, null, true);
-        var result = input.applyConstantOperator(data -> data.gte(0f), context -> {
+        var result = input.applyNonDifferentiableOperator(data -> data.gte(0f), context -> {
             maps.incrementAndGet(); return context;
         });
         assertEquals(1, maps.get());
         assertEquals(0, reads.get());
-        assertThrows(NullPointerException.class, () -> input.applyConstantOperator(null, context -> context));
-        assertThrows(NullPointerException.class, () -> input.applyConstantOperator(data -> data, null));
+        assertThrows(NullPointerException.class, () -> input.applyNonDifferentiableOperator(null, context -> context));
+        assertThrows(NullPointerException.class, () -> input.applyNonDifferentiableOperator(data -> data, null));
         assertEquals(0, reads.get());
         assertEquals(1f, result.data().get().floatValue());
         assertEquals(1, maps.get());
     }
+
+    @Test
+    void nonDifferentiableBinaryDispatchesThroughTheSharedCapability() {
+        FloatWrapperAutogradValue left = value(9f, true);
+        FloatWrapperAutogradValue right = value(4f, true);
+        FloatWrapperAutogradValue result = left.applyNonDifferentiableOperator(
+                right, FloatWrapper::sub, (leftContext, rightContext) -> null);
+
+        assertFalse(result.requiresGrad());
+        assertTrue(result.valueNode().inputs().isEmpty());
+        assertNull(result.valueNode().backwardFunction());
+        assertNull(result.context());
+        assertEquals(5f, result.data().get().floatValue());
+        assertTrue(left.gradient().isEmpty());
+        assertTrue(right.gradient().isEmpty());
+    }
+
 }

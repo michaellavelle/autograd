@@ -92,6 +92,118 @@ class UntrackedOperationTest {
         }
     }
 
+    @Test
+    void nonDifferentiableUnaryRetainsLazyNumericalInputWithoutGradientPropagation() {
+        for (boolean tracked : List.of(false, true)) {
+            AtomicInteger operandReads = new AtomicInteger();
+            AtomicInteger contextMappings = new AtomicInteger();
+            CachedValue operand = new CachedValue(() -> {
+                operandReads.incrementAndGet();
+                return 4f;
+            }, "input", tracked, List.of());
+
+            CachedValue result = operand.applyNonDifferentiableOperator(
+                    numericalData -> numericalData * 3f,
+                    inputContext -> {
+                        contextMappings.incrementAndGet();
+                        assertEquals("input", inputContext);
+                        return inputContext + " mapped";
+                    });
+
+            assertEquals("input mapped", result.context());
+            assertEquals(1, contextMappings.get());
+            assertEquals(0, operandReads.get());
+            assertFalse(result.requiresGrad());
+            assertTrue(result.valueNode().inputs().isEmpty());
+            assertNull(result.valueNode().backwardFunction());
+            assertTrue(result.gradient().isEmpty());
+            assertThrows(IllegalStateException.class, () -> result.backward(operand));
+
+            assertEquals(12f, result.data().get());
+            assertEquals(12f, result.data().get());
+            assertEquals(1, operandReads.get());
+            assertEquals(1, contextMappings.get());
+
+            CachedValue independent = new CachedValue(() -> 2f, "independent", true, List.of());
+            result.add(independent).backward(new CachedValue(() -> 1f, "seed", false, List.of()));
+            assertEquals(1f, independent.gradient().orElseThrow().data().get());
+            assertTrue(result.gradient().isEmpty());
+            assertTrue(operand.gradient().isEmpty());
+        }
+    }
+
+    @Test
+    void nonDifferentiableBinaryRetainsBothNumericalOperandsForEveryTrackingCombination() {
+        for (boolean leftTracked : List.of(false, true)) {
+            for (boolean rightTracked : List.of(false, true)) {
+                AtomicInteger leftReads = new AtomicInteger();
+                AtomicInteger rightReads = new AtomicInteger();
+                AtomicInteger operatorCalls = new AtomicInteger();
+                AtomicInteger contextMappings = new AtomicInteger();
+                CachedValue left = new CachedValue(() -> {
+                    leftReads.incrementAndGet();
+                    return 9f;
+                }, "left", leftTracked, List.of());
+                CachedValue right = new CachedValue(() -> {
+                    rightReads.incrementAndGet();
+                    return 4f;
+                }, "right", rightTracked, List.of());
+
+                CachedValue result = left.applyNonDifferentiableOperator(right,
+                        (leftData, rightData) -> {
+                            operatorCalls.incrementAndGet();
+                            return leftData - rightData;
+                        },
+                        (leftContext, rightContext) -> {
+                            contextMappings.incrementAndGet();
+                            return leftContext + "/" + rightContext;
+                        });
+
+                assertEquals("left/right", result.context());
+                assertEquals(1, contextMappings.get());
+                assertEquals(0, leftReads.get());
+                assertEquals(0, rightReads.get());
+                assertEquals(0, operatorCalls.get());
+                assertFalse(result.requiresGrad());
+                assertTrue(result.valueNode().inputs().isEmpty());
+                assertNull(result.valueNode().backwardFunction());
+                assertTrue(result.gradient().isEmpty());
+                assertThrows(IllegalStateException.class, () -> result.backward(left));
+
+                CachedValue independent = new CachedValue(() -> 2f, "independent", true, List.of());
+                CachedValue combined = result.add(independent);
+                combined.backward(new CachedValue(() -> 1f, "seed", false, List.of()));
+                assertTrue(left.gradient().isEmpty());
+                assertTrue(right.gradient().isEmpty());
+                assertTrue(result.gradient().isEmpty());
+                assertEquals(1f, independent.gradient().orElseThrow().data().get());
+                assertEquals(0, operatorCalls.get());
+
+                assertEquals(7f, combined.data().get());
+                assertEquals(5f, result.data().get());
+                assertEquals(5f, result.data().get());
+                assertEquals(1, leftReads.get());
+                assertEquals(1, rightReads.get());
+                assertEquals(1, operatorCalls.get());
+                assertEquals(1, contextMappings.get());
+            }
+        }
+    }
+
+    @Test
+    void nonDifferentiableBinaryRejectsNullArgumentsWithoutNumericalEvaluation() {
+        CachedValue operand = new CachedValue(() -> {
+            throw new AssertionError("Unexpected numerical evaluation");
+        }, "input", true, List.of());
+
+        assertThrows(NullPointerException.class, () -> operand.applyNonDifferentiableOperator(
+                null, Float::sum, (leftContext, rightContext) -> leftContext));
+        assertThrows(NullPointerException.class, () -> operand.applyNonDifferentiableOperator(
+                operand, null, (leftContext, rightContext) -> leftContext));
+        assertThrows(NullPointerException.class, () -> operand.applyNonDifferentiableOperator(
+                operand, Float::sum, null));
+    }
+
     private static void assertUntracked(FloatAutogradValue value) {
         assertFalse(value.requiresGrad());
         assertTrue(value.valueNode().inputs().isEmpty());

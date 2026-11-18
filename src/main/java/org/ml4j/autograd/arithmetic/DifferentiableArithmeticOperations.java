@@ -220,7 +220,7 @@ public interface DifferentiableArithmeticOperations<V extends AutogradValue<V, D
      */
     @Override
     default V gt(float threshold) {
-        return applyConstantOperator(data -> data.gt(threshold), UnaryOperator.identity());
+        return applyNonDifferentiableOperator(data -> data.gt(threshold), UnaryOperator.identity());
     }
 
     /**
@@ -235,22 +235,45 @@ public interface DifferentiableArithmeticOperations<V extends AutogradValue<V, D
      */
     @Override
     default V gte(float threshold) {
-        return applyConstantOperator(data -> data.gte(threshold), UnaryOperator.identity());
+        return applyNonDifferentiableOperator(data -> data.gte(threshold), UnaryOperator.identity());
     }
 
     /**
-     * Builds a lazy constant leaf from numerical data without recording graph inputs.
+     * Builds a lazy non-differentiable result without recording graph inputs.
      *
      * <p>Used for scalar or tensor comparison masks. Maps context once, does not
      * evaluate data at construction, and installs no backward callback. The result
-     * requires no gradients and starts with an absent gradient. Existing state is unchanged.
+     * requires no gradients and starts with an absent gradient. The numerical supplier
+     * retains the receiver for evaluation, regardless of tracking. The result need
+     * not be numerically constant. Existing state is unchanged.
      *
-     * @param forward the non-null numerical operation
+     * @param forwardOperator the non-null numerical operation
      * @param contextMapper the non-null context mapper
-     * @return the non-null constant leaf
+     * @return the non-null untracked result
      * @throws NullPointerException if an argument is null
      */
-    V applyConstantOperator(UnaryOperator<D> forward, UnaryOperator<C> contextMapper);
+    V applyNonDifferentiableOperator(UnaryOperator<D> forwardOperator, UnaryOperator<C> contextMapper);
+
+    /**
+     * Builds a lazy non-differentiable result from two operands.
+     *
+     * <p>For example, a scalar difference or an elementwise tensor comparison can
+     * depend on both operands without propagating gradients. Context mapping runs
+     * once at construction; numerical evaluation remains deferred. The numerical
+     * supplier retains both operands regardless of their gradient requirements.
+     * The result is untracked with empty differentiation inputs, no backward
+     * callback and no stored gradient. Neither operand is changed.
+     *
+     * @param other the non-null right operand
+     * @param forwardOperator the non-null numerical operation, in left/right order
+     * @param contextMapper the non-null mapper of left/right operand contexts
+     * @return the non-null untracked result
+     * @throws NullPointerException if an argument is null
+     */
+    V applyNonDifferentiableOperator(
+            V other,
+            BinaryOperator<D> forwardOperator,
+            BinaryOperator<C> contextMapper);
 
     /**
      * Builds a lazy unary result, recording backward state only when gradients are required.

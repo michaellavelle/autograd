@@ -306,16 +306,46 @@ public abstract class AutogradValueImpl<V extends AutogradValue<V, D, C>, D, C>
      * and starts with no gradient. Overrides must preserve these guarantees and
      * leave existing operand state unchanged.
      *
-     * @param forward the non-null numerical operation
+     * @param forwardOperator the non-null numerical operation
      * @param contextMapper the non-null output context mapper
-     * @return the new constant leaf
+     * @return the new untracked result
      * @throws NullPointerException if an argument is null
      */
-    public V applyConstantOperator(UnaryOperator<D> forward, UnaryOperator<C> contextMapper) {
-        Objects.requireNonNull(forward, "forward");
+    public V applyNonDifferentiableOperator(
+            UnaryOperator<D> forwardOperator,
+            UnaryOperator<C> contextMapper) {
+        Objects.requireNonNull(forwardOperator, "forwardOperator");
         Objects.requireNonNull(contextMapper, "contextMapper");
+
         C outputContext = contextMapper.apply(context());
-        return createAutogradValue(new OriginSupplier<D>(() -> forward.apply(data().get())),
+        return createAutogradValue(new OriginSupplier<>(() -> forwardOperator.apply(data().get())),
+                outputContext, false, List.of());
+    }
+
+    /**
+     * Builds a lazy untracked result whose numerical data depends on both operands.
+     *
+     * <p>Maps contexts once and retains both operands in the deferred computation,
+     * independently of tracking. Installs no differentiation inputs or backward
+     * callback. Scalar and tensor numerical semantics belong to the supplied operator.
+     *
+     * @param other the non-null right operand
+     * @param forwardOperator the non-null numerical operation, in left/right order
+     * @param contextMapper the non-null mapper of operand contexts, in left/right order
+     * @return the new untracked result
+     * @throws NullPointerException if an argument is null
+     */
+    public V applyNonDifferentiableOperator(
+            V other,
+            BinaryOperator<D> forwardOperator,
+            BinaryOperator<C> contextMapper) {
+        Objects.requireNonNull(other, "other");
+        Objects.requireNonNull(forwardOperator, "forwardOperator");
+        Objects.requireNonNull(contextMapper, "contextMapper");
+
+        C outputContext = contextMapper.apply(context(), other.context());
+        return createAutogradValue(
+                new OriginSupplier<>(() -> forwardOperator.apply(data().get(), other.data().get())),
                 outputContext, false, List.of());
     }
 
