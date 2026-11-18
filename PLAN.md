@@ -23,6 +23,9 @@ Future items are discussion tracks, not authorization or a prescribed implementa
   repeated passes, receiver-local reset and higher derivatives.
 - Raw and wrapped scalar interfaces, implementations and leaf factories; shared
   arithmetic/comparison, ReLU/sigmoid and exp/log/pow capabilities.
+- Non-evaluating cache inspection through CachingDataSupplier.cachedValue(), preserving
+  exact cached object identity and existing failure/retry behaviour. S7.1 validation:
+  `./mvnw verify` passed all 138 tests, including three focused cache-inspection tests.
 - Stable parameter handles with replacement and wrapper extraction; gradient access,
   reset and tracking through AutogradOperations without requiring node access.
 - Extensible/supplied gradient nodes and a successful-backward completion hook.

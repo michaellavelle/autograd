@@ -540,8 +540,14 @@ evaluates lazily and caches the first successful non-null result, returning that
 object thereafter. Source exceptions propagate and null results cause
 NullPointerException; both leave the cache empty so later calls retry.
 
+`Optional<D> cachedValue()` inspects the existing cached field without evaluating
+or invoking the source supplier, or modifying either cache or source. It returns
+empty before successful evaluation, including after exceptions or null results;
+after success it contains the exact cached object, without copying or transformation.
+Repeated inspection adds no evaluation or concurrency guarantees.
+
 After success the wrapper releases its source closure reference. It exposes no reset,
-invalidation, or cache-state methods. Sequential use only; no thread-safety guarantee.
+invalidation methods. Sequential use only; no thread-safety guarantee.
 Callers must preserve cached numerical contents to satisfy Value stability. It performs
 no native-resource cleanup. Tensor adapters can opt in to cache random generation or
 native-array allocation; the core base class still leaves caching optional. This class

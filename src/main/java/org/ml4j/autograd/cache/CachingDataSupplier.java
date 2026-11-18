@@ -1,6 +1,7 @@
 package org.ml4j.autograd.cache;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -28,6 +29,20 @@ public final class CachingDataSupplier<D> implements Supplier<D> {
      */
     public CachingDataSupplier(Supplier<? extends D> source) {
         this.source = Objects.requireNonNull(source, "source");
+    }
+
+    /**
+     * Inspects the cache without triggering evaluation.
+     *
+     * <p>Returns empty until an evaluation succeeds, including after a supplier
+     * exception or null result. After success, returns the exact cached object
+     * without copying or transformation. Does not invoke the underlying supplier
+     * or modify the cache or supplier. Adds no thread-safety guarantee.
+     *
+     * @return the cached value, or empty before successful evaluation
+     */
+    public Optional<D> cachedValue() {
+        return Optional.ofNullable(cached);
     }
 
     /**

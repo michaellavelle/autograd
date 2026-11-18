@@ -17,6 +17,70 @@ class CachingDataSupplierTest {
             new FloatAutogradValueFactoryImpl();
 
     @Test
+    void inspectingUnevaluatedCacheDoesNotInvokeSupplier() {
+        AtomicInteger evaluations = new AtomicInteger();
+        CachingDataSupplier<Object> supplier = new CachingDataSupplier<>(() -> {
+            evaluations.incrementAndGet();
+            return new Object();
+        });
+
+        assertTrue(supplier.cachedValue().isEmpty());
+        assertTrue(supplier.cachedValue().isEmpty());
+        assertEquals(0, evaluations.get());
+
+        assertNotNull(supplier.get());
+        assertEquals(1, evaluations.get());
+    }
+
+    @Test
+    void inspectingPopulatedCacheReturnsExactObjectWithoutReevaluation() {
+        AtomicInteger evaluations = new AtomicInteger();
+        float[] numericalData = new float[]{2f, 3f};
+        CachingDataSupplier<float[]> supplier = new CachingDataSupplier<>(() -> {
+            evaluations.incrementAndGet();
+            return numericalData;
+        });
+
+        assertSame(numericalData, supplier.get());
+        assertSame(numericalData, supplier.cachedValue().orElseThrow());
+        assertSame(numericalData, supplier.cachedValue().orElseThrow());
+        assertSame(numericalData, supplier.get());
+        assertEquals(1, evaluations.get());
+    }
+
+    @Test
+    void inspectingCacheAfterExceptionOrNullResultPreservesRetry() {
+        AtomicInteger evaluations = new AtomicInteger();
+        IllegalStateException failure = new IllegalStateException("not ready");
+        Object successfulResult = new Object();
+        CachingDataSupplier<Object> supplier = new CachingDataSupplier<>(() -> {
+            int attempt = evaluations.incrementAndGet();
+            if (attempt == 1) {
+                throw failure;
+            }
+            if (attempt == 2) {
+                return null;
+            }
+            return successfulResult;
+        });
+
+        assertSame(failure, assertThrows(IllegalStateException.class, supplier::get));
+        assertTrue(supplier.cachedValue().isEmpty());
+        assertTrue(supplier.cachedValue().isEmpty());
+        assertEquals(1, evaluations.get());
+
+        assertThrows(NullPointerException.class, supplier::get);
+        assertTrue(supplier.cachedValue().isEmpty());
+        assertTrue(supplier.cachedValue().isEmpty());
+        assertEquals(2, evaluations.get());
+
+        assertSame(successfulResult, supplier.get());
+        assertSame(successfulResult, supplier.cachedValue().orElseThrow());
+        assertSame(successfulResult, supplier.get());
+        assertEquals(3, evaluations.get());
+    }
+
+    @Test
     void defersEvaluationAndReusesTheFirstResult() {
         var reads = new AtomicInteger();
         var supplier = new CachingDataSupplier<>(() -> {
